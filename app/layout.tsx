@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { LiveAPIProvider } from "@/contexts/LiveAPIContext";
+import { AppSidebar } from "@/components/sidebar-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,13 +25,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const API_KEY = process.env.NEXT_PUBLIC_GENAI_API_KEY as string;
+  const host = "generativelanguage.googleapis.com";
+  const uri = `wss://${host}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`;
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SidebarProvider>
-          {children}
+          <LiveAPIProvider url={uri} apiKey={API_KEY}>
+            <AppSidebar />
+            {children}
+          </LiveAPIProvider>
         </SidebarProvider>
       </body>
     </html>

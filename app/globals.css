@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+@import "mafs/core.css";
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
