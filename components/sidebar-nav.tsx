@@ -10,7 +10,8 @@ import { useRef, useState, useEffect } from "react";
 import ControlTray from "@/components/ControlTray";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { prompt } from "@/lib/prompt_helpers/prompt";
-import {  visual_response, google_search } from "@/lib/schema/function-call";
+import {  visual_response } from "@/lib/schema/function-call";
+import { UserButton } from "@clerk/nextjs";
 export function AppSidebar() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
@@ -43,9 +44,11 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="dark text-white">
-      <SidebarHeader>
-        <h1 className="text-lg font-semibold px-4">Cynthia</h1>
+      <SidebarHeader className="flex flex-row justify-between items-center gap-4 py-4">
+        <h1 className="text-lg font-semibold">Samantha</h1>
+        <UserButton />
       </SidebarHeader>
+      <hr className="border-white/10" />
       <SidebarContent>
         {videoStream && (
           <div className="space-y-4 p-4">

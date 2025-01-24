@@ -1,13 +1,13 @@
 'use client'
 import { Card } from "@/components/ui/card";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ToolCall } from "@/multimodal-live-types";
 import {  visual_response } from "@/lib/schema/function-call";
-import GenUI from "@/components/gen-ui";
-import { getVisualResponse } from "./actions";
+import { generateUI, getVisualResponse } from "../../actions";
 export default function Home() {
   const {client} = useLiveAPIContext();
+  const [component, setComponent] = useState<React.ReactNode>();
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
       console.log(`got toolcall`, toolCall);
@@ -18,7 +18,8 @@ export default function Home() {
         toolCall.functionCalls.forEach(async (fc:any) => {
           if (fc.name === visual_response.name) {
             console.log(fc.args.visual_response);
-            await getVisualResponse(fc.args.visual_response)
+            // await getVisualResponse(fc.args.visual_response)
+            setComponent(await generateUI(fc.args.visual_response))
           }
         });
         setTimeout(
@@ -44,7 +45,8 @@ export default function Home() {
             {/* Chat Section */}
             <Card className="bg-white/80 border-gray-200 shadow-lg">
                 <div className="p-4">
-                   <GenUI />
+                    {component}
+                   {/* <GenUI /> */}
                 </div>
             </Card>
         </main>
