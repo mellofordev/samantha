@@ -10,13 +10,19 @@ import { useRef, useState, useEffect } from "react";
 import ControlTray from "@/components/ControlTray";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { prompt } from "@/lib/prompt_helpers/prompt";
-import {  visual_response } from "@/lib/schema/function-call";
+import {  knowledge_graph } from "@/lib/schema/function-call";
 import { UserButton } from "@clerk/nextjs";
+import { Instrument_Serif } from 'next/font/google';
+
+const instrumentSerif = Instrument_Serif({ 
+  weight: '400',
+  subsets: ['latin'],
+});
+
 export function AppSidebar() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
-
-  const { setConfig } = useLiveAPIContext();
+  const { setConfig} = useLiveAPIContext();
 
   useEffect(() => {
     setConfig({
@@ -37,18 +43,21 @@ export function AppSidebar() {
       tools: [
         // there is a free-tier quota for search
         { googleSearch:{} },
-        { functionDeclarations: [visual_response] },
+        { functionDeclarations: [knowledge_graph] },
       ],
     });
   }, [setConfig]);
-
   return (
-    <Sidebar className="dark text-white">
-      <SidebarHeader className="flex flex-row justify-between items-center gap-4 py-4">
-        <h1 className="text-lg font-semibold">Samantha</h1>
-        <UserButton />
+    <Sidebar className="dark text-white border-r border-white/10 border-dashed">
+      <SidebarHeader className="flex flex-row justify-between items-center p-4 m-2">
+        <div className="flex items-center gap-2">
+          <h1 className={`text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent ${instrumentSerif.className}`}>
+            Samantha
+          </h1>
+        </div>
+        <UserButton  />
       </SidebarHeader>
-      <hr className="border-white/10" />
+      <hr className="border-white/10 border-dashed" />
       <SidebarContent>
         {videoStream && (
           <div className="space-y-4 p-4">

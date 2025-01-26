@@ -9,10 +9,11 @@ export const knowledgeGraphSchema = z.object({
     description: z.string().describe('Description of how this topic relates'),
     imageUrl: z.string().describe('Image URL for the related topic')
   })).describe('Array of related topics'),
-  videoResult: z.object({
+  videoResult: z.array(z.object({
     title: z.string().describe('Title of the relevant video'),
-    thumbnailUrl: z.string().describe('Video thumbnail URL')
-  }).describe('Featured video about the topic'),
+    thumbnailUrl: z.string().describe('Thumbnail URL of the relevant video, provide emtpy string now, the url will be fetched from external api'),
+    videoId: z.string().describe('Video ID of the relevant video, provide emtpy string now, the url will be fetched from external api'),
+  })).describe('Featured videos about the topic'),
   imageGallery: z.array(z.string()).describe('Array of image URLs for the gallery'),
   facts: z.array(z.object({
     title: z.string().describe('Title of the fact'),

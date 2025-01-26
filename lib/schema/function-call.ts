@@ -1,5 +1,5 @@
 import { FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { visual_response_description } from "../prompt_helpers/visual_response-description";
+import { knowledge_graph_description } from "../prompt_helpers/knowledge-graph";
 export const declaration: FunctionDeclaration = {
   name: "model_response",
   description: "The response of the model in text format",
@@ -14,22 +14,21 @@ export const declaration: FunctionDeclaration = {
     required: ["response"],
   },
 };
-export const visual_response: FunctionDeclaration = {
-  name: "visual_response",
+export const knowledge_graph: FunctionDeclaration = {
+  name: "knowledge_graph",
   description:
-    "Generates educational UI components and visual aids by providing structured information to a UI generation model. The response will be used to automatically create React components that help explain concepts through interactive visualizations.",
+    "Generate a knowledge graph for the user's query which consist of the title , description , image , related topics , video , image gallery , facts",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      visual_response: {
+      knowledge_graph: {
         type: SchemaType.STRING,
-        description: visual_response_description,
+        description: knowledge_graph_description,
       },
     },
-    required: ["visual_response"],
+    required: ["knowledge_graph"],
   },
 };
-
 export const call_background_music: FunctionDeclaration = {
   name: "call_background_music",
   description: "Call this function when you want to play background music, the background music length is 6 minutes 57 seconds",

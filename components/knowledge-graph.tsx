@@ -1,5 +1,4 @@
 import * as React from "react"
-import { Play } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph"
 
@@ -13,41 +12,51 @@ export function KnowledgeGraphBento({
   facts,
 }: KnowledgeGraphData) {
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Main Topic */}
-      <Card className="overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-6 p-6">
-          <div>
-            <CardHeader className="px-0">
-              <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-              <CardDescription className="text-lg mt-2">{description}</CardDescription>
+    <div className="max-w-5xl mx-auto p-4 space-y-4">
+      {/* Hero Section */}
+      <Card className="overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="grid md:grid-cols-5 gap-4 p-4">
+          <div className="md:col-span-3">
+            <CardHeader className="px-0 pb-2">
+              <CardTitle className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                {title}
+              </CardTitle>
+              <CardDescription className="text-lg font-medium text-gray-700">
+                {description}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="px-0">
-              <div className="mt-4 space-y-4">
-                <h3 className="font-semibold text-lg">Quick Facts</h3>
-                <ul className="space-y-2">
-                  {facts.slice(0, 3).map((fact, index) => (
-                    <li key={index} className="text-sm">
-                      <span className="font-medium">{fact.title}:</span> {fact.content}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </CardContent>
+            
+            {/* Quick Facts as Pills */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {facts.slice(0, 3).map((fact, index) => (
+                <div
+                  key={index}
+                  className="flex-1 min-w-[200px] p-3 rounded-xl bg-white shadow-sm border border-blue-100 hover:shadow-md transition-all cursor-pointer"
+                >
+                  <div className="font-bold text-indigo-700 text-sm mb-1">
+                    {fact.title}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {fact.content}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-6">
+          
+          <div className="md:col-span-2 space-y-3">
             <img
               src={imageUrl || "/placeholder.svg"}
               alt={title}
-              className="w-full h-[300px] object-cover rounded-lg shadow-lg"
+              className="w-full h-48 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow"
             />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               {imageGallery.slice(0, 3).map((img, index) => (
                 <img
                   key={index}
                   src={img || "/placeholder.svg"}
                   alt={`${title} gallery ${index + 1}`}
-                  className="w-full h-24 object-cover rounded-lg shadow"
+                  className="w-full h-20 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
                 />
               ))}
             </div>
@@ -55,72 +64,50 @@ export function KnowledgeGraphBento({
         </div>
       </Card>
 
-      {/* Related Topics */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {relatedTopics.map((topic, index) => (
-          <Card key={index} className="overflow-hidden">
-            <img
-              src={topic.imageUrl || "/placeholder.svg"}
-              alt={topic.title}
-              className="w-full h-48 object-cover"
-            />
-            <CardHeader>
-              <CardTitle className="text-lg">{topic.title}</CardTitle>
-              <CardDescription>{topic.description}</CardDescription>
+      {/* Video Carousel */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {videoResult?.slice(0, 3).map((video, index) => (
+          <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="aspect-video">
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${video.videoId}`}
+                title={video.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm font-medium line-clamp-2">{video.title}</CardTitle>
             </CardHeader>
           </Card>
         ))}
       </div>
 
-      {/* Video Section */}
-      <Card className="overflow-hidden">
-        <div className="relative">
-          <img
-            src={videoResult.thumbnailUrl || "/placeholder.svg"}
-            alt={videoResult.title}
-            className="w-full h-[400px] object-cover"
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-            <Play className="w-16 h-16 text-white" />
-          </div>
-        </div>
-        <CardHeader>
-          <CardTitle className="text-lg">{videoResult.title}</CardTitle>
-        </CardHeader>
-      </Card>
+      {/* Related Topics as Interactive Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {relatedTopics.map((topic, index) => (
+          <Card 
+            key={index} 
+            className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden"
+          >
+            <div className="relative h-32">
+              <img
+                src={topic.imageUrl || "/placeholder.svg"}
+                alt={topic.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <CardTitle className="absolute bottom-2 left-2 text-white text-lg">
+                {topic.title}
+              </CardTitle>
+            </div>
+            <CardContent className="p-3">
+              <p className="text-sm text-gray-600 line-clamp-2">{topic.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }
-
-// export default function KnowledgeGraph({data}:any) {
-//     return <div className="p-4 bg-muted rounded-xl">
-//     <div className="grid grid-cols-3 gap-4 md:grid-cols-4 lg:grid-cols-6">
-//       {/* Main Result */}
-//       <Card className="col-span-3 row-span-2 overflow-hidden">
-//         <CardHeader>
-//           <CardTitle>{data.title}</CardTitle>
-//           <CardDescription>{data.description}</CardDescription>
-//         </CardHeader>
-//         <CardContent>
-//             <img
-//               src={"https://assets.editorial.aetnd.com/uploads/2009/10/adolf-hitler-gettyimages-119505258.jpg"}
-//               alt={"image"}
-//               className="rounded-md object-cover"
-//             />
-//            {/* Related Topics */}
-//            <div className="flex flex-wrap gap-2 mt-4">
-//              {data.relatedTopics.map((topic:any, index:any) => (
-//                <Button
-//                  variant={'secondary'}
-//                  key={index}
-//                  className="px-3 py-1 text-sm bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-colors"
-//                >
-//                  {topic.title}
-//                </Button>
-//              ))}
-//            </div>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   </div>
-// }

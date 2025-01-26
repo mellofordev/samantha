@@ -16,15 +16,15 @@ interface SearchResult {
 // Function to fetch video from YouTube API
 async function fetchYouTubeVideo(query: string) {
   const response = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${process.env.YOUTUBE_API_KEY}&type=video&maxResults=1`
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${process.env.NEXT_PUBLIC_YOUTUBE_API_KEY}&type=video&maxResults=3`
   );
   const data = await response.json();
-  const video = data.items?.[0];
-  return video ? {
+  const videos = data.items?.map((video: any) => ({
     title: video.snippet.title,
     thumbnailUrl: video.snippet.thumbnails.high.url,
     videoId: video.id.videoId
-  } : null;
+  })) || [];
+  return videos;
 }
 
 export async function getVisualResponse(response: string) {
@@ -98,9 +98,43 @@ export async function generateUI(prompt: string) {
           })).describe('Array of key facts')
         }),
         generate: async function* (data) {
-          yield <div>Generating Knowledge Graph...</div>
+          yield (
+            <div className="space-y-6 animate-pulse">
+              {/* Main topic skeleton */}
+              <div className="space-y-3">
+                <div className="h-8 bg-gray-200 rounded-lg w-1/3" />
+                <div className="h-20 bg-gray-200 rounded-lg" />
+                <div className="h-48 bg-gray-200 rounded-lg" />
+              </div>
+
+              {/* Related topics skeleton */}
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-32 bg-gray-200 rounded-lg" />
+                    <div className="h-6 bg-gray-200 rounded-lg w-2/3" />
+                    <div className="h-16 bg-gray-200 rounded-lg" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Facts skeleton */}
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="p-4 space-y-2 border border-gray-200 rounded-lg">
+                    <div className="h-6 bg-gray-200 rounded-lg w-1/2" />
+                    <div className="h-16 bg-gray-200 rounded-lg" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center text-gray-500">
+                Generating Knowledge Graph...
+              </div>
+            </div>
+          )
           const searchResults = await getSearchResults(data.title)
-        
+          const videoResult = await fetchYouTubeVideo(data.title)
           try {
             const knowledgeGraphData = {
               title: data.title,
@@ -110,10 +144,7 @@ export async function generateUI(prompt: string) {
                 ...topic,
                 imageUrl: searchResults.images[index + 1] || '/placeholder.svg'
               })),
-              videoResult: {
-                title: `About ${data.title}`,
-                thumbnailUrl: searchResults.images[0] || '/placeholder.svg'
-              },
+              videoResult: videoResult,
               imageGallery: searchResults.images || ['/placeholder.svg'],
               facts: data.facts
             };
