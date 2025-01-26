@@ -1,9 +1,24 @@
-import { ClerkProvider, SignedOut } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import "../globals.css";
+import { Instrument_Serif } from "next/font/google";
+import { Metadata } from "next";
 
-export default function LoginLayout({ children }: { children: React.ReactNode }) {
+const instrumentSerif = Instrument_Serif({ 
+  weight: ['400'],
+  subsets: ['latin'],
+  variable: '--font-instrument-serif'
+});
+export const metadata: Metadata = {
+  title: 'Samantha',
+  description: 'A teacher that dont judge you!',
+}
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html>
+    <html lang="en" className={`${instrumentSerif.variable}`}>
       <body>
         <ClerkProvider>
           {children}
