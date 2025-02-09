@@ -1,55 +1,230 @@
-'use client'
-import { Card } from "@/components/ui/card";
+declare const chrome: any;
+
+"use client"
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { useEffect, useState } from "react";
 import { ToolCall } from "@/multimodal-live-types";
-import {  knowledge_graph } from "@/lib/schema/function-call";
-import { generateUI } from "../../actions";
+import {
+  knowledge_graph,
+  operator,
+  operator_completed,
+} from "@/lib/schema/function-call";
+import {
+  generateUI,
+  agent,
+} from "@/app/actions";
 import Welcome from "@/components/welcome";
+import { automationStore } from "@/lib/store/automation-store";
+const EXTENSION_ID = "kedicgkkepbajabaahchaahppidgjica";
+
 export default function Home() {
-  const {client} = useLiveAPIContext();
+  const { client } = useLiveAPIContext();
   const [component, setComponent] = useState<React.ReactNode>();
+  const [isFirstTask, setIsFirstTask] = useState(true);
+
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
       console.log(`got toolcall`, toolCall);
-      
-      // send data for the response of your tool call
-      // in this case Im just saying it was successful
+
       if (toolCall.functionCalls.length) {
-        toolCall.functionCalls.forEach(async (fc:any) => {
+        toolCall.functionCalls.forEach(async (fc: any) => {
           if (fc.name === knowledge_graph.name) {
-            console.log(fc.args.knowledge_graph);
-            // await getVisualResponse(fc.args.visual_response)
-            setComponent(await generateUI(fc.args.knowledge_graph))
+            console.log("Knowledge Graph Call:", fc.args.knowledge_graph);
+            setComponent(await generateUI(fc.args.knowledge_graph));
+          }
+          if (fc.name === operator.name) {
+            const storedState = automationStore.getState();
+            const currentProgress = fc.args.agent_progress || storedState.agent_progress;
+            
+            // For first task, use user_task, otherwise use the current progress
+            const taskInput = isFirstTask ? fc.args.user_task : currentProgress;
+            console.log("Current task input:", taskInput);
+            
+            const task = await agent(taskInput, storedState.screenshot, storedState.domElements);
+            console.log("Agent response:", task);
+
+            if (isFirstTask) {
+              setIsFirstTask(false);
+            }
+
+            // Update store with new progress immediately
+            automationStore.setState({
+              agent_progress: task.next_step
+            });
+
+            switch (task.task_enum) {
+              case "GO_TO_URL": {
+                chrome.runtime.sendMessage(
+                  EXTENSION_ID,
+                  {
+                    action: "GOTO",
+                    payload: { url: task.context.url }
+                  },
+                  async function(response: any) {
+                    if (response?.success) {
+                      automationStore.setState({
+                        currentUrl: task.context.url,
+                        domElements: response.dom,
+                        screenshot: response.screenshot,
+                        tabID: response.tabId,
+                      });
+
+                      // Send response with updated progress
+                      client.sendToolResponse({
+                        functionResponses: [{
+                          response: {
+                            output: {
+                              is_task_finished: task.is_full_user_task_finished,
+                              agent_progress: task.next_step,
+                              success: true
+                            }
+                          },
+                          id: fc.id,
+                        }]
+                      });
+                      console.log("Tool response sent:", task.next_step, task.is_full_user_task_finished);
+                    } else {
+                      handleError(client, fc.id, task.next_step, response?.error);
+                    }
+                  }
+                );
+                break;
+              }
+
+              case "CLICK": {
+                console.log("storedState",storedState.tabID)
+                chrome.runtime.sendMessage(
+                  EXTENSION_ID,
+                  {
+                    action: "CLICK",
+                    payload: {
+                      script: task.selector,
+                      tabId: storedState.tabID,
+                    }
+                  },
+                  async function(response: any) {
+                    if (response?.success) {
+                      automationStore.setState({
+                        domElements: response.dom,
+                        screenshot: response.screenshot,
+                      });
+
+                      client.sendToolResponse({
+                        functionResponses: [{
+                          response: {
+                            output: {
+                              is_task_finished: task.is_full_user_task_finished,
+                              agent_progress: task.next_step,
+                              success: true
+                            }
+                          },
+                          id: fc.id,
+                        }]
+                      });
+                    } else {
+                      handleError(client, fc.id, task.next_step, response?.error);
+                    }
+                  }
+                );
+                break;
+              }
+              case "TYPE": {
+                console.log("storedState",storedState.tabID)
+                chrome.runtime.sendMessage(
+                  EXTENSION_ID,
+                  {
+                    action: "TYPE",
+                    payload: {
+                      text: task.context.searchTerms,
+                      script: task.selector,
+                      tabId: storedState.tabID,
+                    }
+                  },
+                  async function(response: any) {
+                    if (response?.success) {
+                      automationStore.setState({
+                        domElements: response.dom,
+                        screenshot: response.screenshot,
+                      });
+
+                      client.sendToolResponse({
+                        functionResponses: [{
+                          response: {
+                            output: {
+                              is_task_finished: task.is_full_user_task_finished,
+                              agent_progress: task.next_step,
+                              success: true
+                            }
+                          },
+                          id: fc.id,
+                        }]
+                      });
+                    } else {
+                      handleError(client, fc.id, task.next_step, response?.error);
+                    }
+                  }
+                );
+                break;
+              }
+
+              
+
+              default: {
+                console.error("Unsupported task enum:", task.task_enum);
+                handleError(client, fc.id, task.next_step, "Unsupported task type");
+                break;
+              }
+            }
+          }
+          if (fc.name === operator_completed.name) {
+            console.log("Operator Completed Call:", fc.args.is_task_finished);
+            setIsFirstTask(true);
+            automationStore.clear(); // Clear store when task is complete
+            client.sendToolResponse({
+              functionResponses: [{
+                response: {
+                  output: {
+                    success: true,
+                  },
+                },
+                id: fc.id,
+              }]
+            });
           }
         });
-        setTimeout(
-          () =>
-            client.sendToolResponse({
-              functionResponses: toolCall.functionCalls.map((fc) => ({
-                response: { output: { sucess: true } },
-                id: fc.id,
-              })),
-            }),
-          200
-        );
       }
     };
+
+    // Helper function for error handling
+    const handleError = (client: any, fcId: string, progress: string, error: string) => {
+      console.error("Action failed:", error);
+      client.sendToolResponse({
+        functionResponses: [{
+          response: {
+            output: { 
+              success: false, 
+              agent_progress: progress,
+              error: error 
+            }
+          },
+          id: fcId,
+        }]
+      });
+    };
+
     client.on("toolcall", onToolCall);
     return () => {
       client.off("toolcall", onToolCall);
     };
-  }, [client]);
+  }, [client, isFirstTask]);
+
   return (
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
-        <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
-            <div className="min-h-full ml-64 rounded-2xl bg-white overflow-auto"> {/* Added ml-64 for margin-left */}
-                {
-                  component!=null ? component : <Welcome />
-                }
-            </div>
-        </main>
+      <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
+        <div className="min-h-full ml-64 rounded-3xl bg-white overflow-auto">
+          {component != null ? component : <Welcome />}
+        </div>
+      </main>
     </div>
   );
 }
-

@@ -29,33 +29,86 @@ export const knowledge_graph: FunctionDeclaration = {
     required: ["knowledge_graph"],
   },
 };
-export const call_background_music: FunctionDeclaration = {
-  name: "call_background_music",
-  description: "Call this function when you want to play background music, the background music length is 6 minutes 57 seconds",
+export const chat_history: FunctionDeclaration = {
+  name: "chat_history", 
+  description: "The chat history of the user with the Assistant",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      timing: {
-        type: SchemaType.STRING,
-        description: "The timing of the background music to play from , if the function call is for intro then the timing should start from 00:00:00 , otherwise you can choose a timing from 00:00:00 to 06:57:00",
-      },
-      type: {
-        type: SchemaType.STRING,
-        description: "The type of the background music to play , it can be welcome, learning, math, science, creative, review, achievement, break, focus",
+      chat_history: {
+        type: SchemaType.ARRAY,
+        description: "The chat history of the user with the Assistant",
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            message: {
+              type: SchemaType.STRING,
+              description: "The message text"
+            },
+            role: {
+              type: SchemaType.STRING,
+              description: "The role of who sent the message",
+              enum: ["user", "assistant"]
+            }
+          },
+          required: ["message", "role"]
+        }
       },
     },
-    required: ["timing", "type"],
+    required: ["chat_history"],
   },
 };
 
-export const google_search: FunctionDeclaration = {
-  name: "google_search",
-  description: "Search the internet for the user's query",
+export const operator: FunctionDeclaration = {
+  name: "operator",
+  description:
+    `<tool_description>
+    The operator tool enables web browser automation to complete complex user tasks. It should be called when a user requests actions that require browser interaction.
+    </tool_description>
+    <example_tasks>
+    - 'Order a large pepperoni pizza from Domino's for delivery to my address'
+    - 'Find and compare prices for iPhone 14 Pro across major retailers'
+    - 'Book a one-way flight from New York to London for next Friday'
+    - 'Fill out and submit the contact form on company X's website'
+    - 'Add a MacBook Pro 16\" to my Amazon cart and proceed to checkout'
+    </example_tasks>
+    <capabilities>
+    When invoked, it activates a Chrome extension that can programmatically navigate websites, fill forms, click buttons and perform other browser actions.
+    </capabilities>
+    The tool will be called and the agent does the task step by step.
+    Each step or the task completion is sent back to the model in toolResponse form 
+    `,
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      search_query: { type: SchemaType.STRING, description: "The user's query" },
+      user_task:{
+        type: SchemaType.STRING,
+        description: "The task that the user wants to perform",
+      },
+      agent_progress:{
+        type: SchemaType.STRING,
+        description: "The progress of the agent in the task",
+      },
+      next_step:{
+        type: SchemaType.STRING,
+        description: "The next step of the agent in the task , if the previous step failed or not successful then the next step should be the same step again, each step or task completion is sent back to the model in toolResponse form",
+      },
     },
-    required: ["search_query"],
+    required: ["user_task","agent_progress","next_step"],
+  },
+};
+
+export const operator_completed: FunctionDeclaration = {
+  name: "operator_completed",
+  description: "The operator tool is completed",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      is_task_finished: {
+        type: SchemaType.BOOLEAN,
+        description: "Whether the entire user task is finished",
+      },
+    },
+    required: ["is_task_finished"],
   },
 };

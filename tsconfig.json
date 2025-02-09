@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "lib/prompt_helpers/knowledge-graph.ts", "lib/prompt_helpers/generate-user-prompt.ts"],
   "exclude": ["node_modules"]
 }
