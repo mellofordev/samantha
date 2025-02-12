@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "../globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { LiveAPIProvider } from "@/contexts/LiveAPIContext";
 import { AppSidebar } from "@/components/sidebar-nav";
 import { ClerkProvider } from "@clerk/nextjs";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,6 +14,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: ['400'],
+  subsets: ['latin'],
+  variable: '--font-instrument-serif'
 });
 
 export const metadata: Metadata = {
@@ -32,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
       >
         <SidebarProvider>
           <ClerkProvider>

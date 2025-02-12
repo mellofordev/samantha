@@ -1,8 +1,8 @@
 "use server";
-import { streamUI } from "ai/rsc";
-import { CoreMessage, generateObject, generateText, ToolResultPart } from "ai";
+import { createStreamableValue, streamUI } from "ai/rsc";
+import { CoreMessage, generateObject, generateText, streamObject, ToolResultPart } from "ai";
 import { google } from "@ai-sdk/google";
-import { z } from "zod";
+import { object, z } from "zod";
 import { KnowledgeGraphBento } from "@/components/knowledge-graph";
 import { JSDOM } from 'jsdom';
 
@@ -315,42 +315,27 @@ For information queries like "tell me about Einstein" or "latest news on AI", ge
         }),
         generate: async function* (data) {
           yield (
-            <div className="space-y-6 animate-pulse">
-              {/* Main topic skeleton */}
-              <div className="space-y-3">
-                <div className="h-8 bg-gray-200 rounded-lg w-1/3" />
-                <div className="h-20 bg-gray-200 rounded-lg" />
-                <div className="h-48 bg-gray-200 rounded-lg" />
-              </div>
-
-              {/* Related topics skeleton */}
-              <div className="grid grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-32 bg-gray-200 rounded-lg" />
-                    <div className="h-6 bg-gray-200 rounded-lg w-2/3" />
-                    <div className="h-16 bg-gray-200 rounded-lg" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Facts skeleton */}
-              <div className="grid grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="p-4 space-y-2 border border-gray-200 rounded-lg"
-                  >
-                    <div className="h-6 bg-gray-200 rounded-lg w-1/2" />
-                    <div className="h-16 bg-gray-200 rounded-lg" />
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center text-gray-500">
-                Generating Knowledge Graph...
-              </div>
+            <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden bg-white">
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url('/cloud_bg.png')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: `url("/noise.png")`,
+              }}
+            />
+            <div className="text-center relative z-10 mb-12">
+              <h1 className={`text-4xl font-instrument-serif mb-2 text-gray-800`}>
+                Generating UI
+              </h1>
             </div>
+          </div>
           );
           const searchResults = await getSearchResults(data.title);
           const videoResult = await fetchYouTubeVideo(data.title);
@@ -368,7 +353,7 @@ For information queries like "tell me about Einstein" or "latest news on AI", ge
               facts: data.facts,
             };
 
-            return <KnowledgeGraphBento {...knowledgeGraphData} />;
+            return <div></div>;
           } catch (error) {
             console.error("Error generating knowledge graph:", error);
             throw error;
@@ -378,4 +363,107 @@ For information queries like "tell me about Einstein" or "latest news on AI", ge
     },
   });
   return result.value;
+}
+export async function generateKnowledgeGraph(prompt: string) {
+    const response = await generateObject({
+      model: google("gemini-2.0-flash"),
+      prompt: `<query_analysis>
+      <user_input>${prompt}</user_input>
+      <objective>Process query for knowledge graph generation</objective>
+    </query_analysis>`,
+
+      system: `
+      <assistant_role>
+      You are an AI assistant specialized in providing informational responses through knowledge graphs.
+      </assistant_role>
+
+      <primary_functions>
+      1. Knowledge Graph Queries:
+        - Handle informational and educational queries
+        - Provide facts and explanations about topics
+        - Show relationships between concepts
+        - Display multimedia content and search results
+
+      2. Query Analysis:
+        - Process query to extract key concepts and relationships
+        - Identify relevant facts and information to include
+        - Structure information in an educational and engaging way
+      </primary_functions>
+
+      <response_instruction>
+      For information queries like "tell me about Einstein" or "latest news on AI", generate a comprehensive knowledge graph with relevant facts, relationships and multimedia content.
+      </response_instruction>`,
+
+      maxRetries: 3,
+      schemaName: "knowledge_graph",
+      schema: z.object({
+        title: z.string().describe("The main search query or topic title"),
+        description: z
+          .string()
+          .describe(
+            "A comprehensive overview of the topic with key points and context (2-3 sentences)"
+          ),
+        relatedTopics: z
+          .array(
+            z.object({
+              title: z
+                .string()
+                .describe("Name of the related concept or subtopic"),
+              description: z
+                .string()
+                .describe(
+                  "Explanation of how this topic connects to the main subject and its significance"
+                ),
+            })
+          )
+          .describe(
+            "Connected concepts and subtopics that provide broader context"
+          ),
+        facts: z
+          .array(
+            z.object({
+              title: z.string().describe("Concise fact title or category"),
+              emoji: z.string().describe("An emoji that represents the fact"),
+              content: z
+                .string()
+                .describe(
+                  "Detailed explanation of the fact with supporting information"
+                ),
+            })
+          )
+          .describe(
+            "Key facts, statistics, and important details about the topic"
+          ),
+        })
+    });
+    const searchResults = await getSearchResults(response.object.title);
+    const videoResult = await fetchYouTubeVideo(response.object.title);
+    try {
+      const knowledgeGraphData = {
+        title: response.object.title,
+        description: response.object.description,
+        imageUrl: searchResults.images[0] || "/placeholder.svg",
+        relatedTopics: response.object.relatedTopics.map((topic, index) => ({
+          ...topic,
+          imageUrl: searchResults.images[index + 1] || "/placeholder.svg",
+        })),
+        videoResult: videoResult,
+        imageGallery: searchResults.images || ["/placeholder.svg"],
+        facts: response.object.facts,
+        search_results: searchResults.results,
+      };
+
+      return knowledgeGraphData;
+    } catch (error) {
+      console.error("Error generating knowledge graph:", error);
+      
+      return {
+        title: "",
+        description: "",
+        imageUrl: "",
+        relatedTopics: [],
+        videoResult: [],
+      }
+    }
+    
 }

@@ -1,7 +1,8 @@
+"use client"
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph"
-
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 export function KnowledgeGraphBento({
   title,
   description,
@@ -10,104 +11,141 @@ export function KnowledgeGraphBento({
   videoResult,
   imageGallery,
   facts,
+  search_results,
 }: KnowledgeGraphData) {
+  const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-4">
+    <div className="w-full mx-auto p-4 space-y-6 relative bg-white">
       {/* Hero Section */}
-      <Card className="overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="grid md:grid-cols-5 gap-4 p-4">
-          <div className="md:col-span-3">
-            <CardHeader className="px-0 pb-2">
-              <CardTitle className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                {title}
-              </CardTitle>
-              <CardDescription className="text-lg font-medium text-gray-700">
-                {description}
-              </CardDescription>
-            </CardHeader>
-            
-            {/* Quick Facts as Pills */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              {facts.slice(0, 3).map((fact, index) => (
+      <Card className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md border border-white/40">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-2xl font-bold text-blue-600 text-center">
+            {title}
+          </CardTitle>
+          <div className="flex justify-center my-4">
+            <svg width="100" height="12" className="text-gray-200">
+              <pattern id="wave" x="0" y="0" width="20" height="12" patternUnits="userSpaceOnUse">
+                <path d="M0 6 Q 5 0, 10 6 Q 15 12, 20 6" fill="none" stroke="currentColor" strokeWidth="2"/>
+              </pattern>
+              <rect width="100" height="12" fill="url(#wave)"/>
+            </svg>
+          </div>
+          <CardDescription className="text-gray-600 text-center">{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Image Gallery */}
+            <div className="mt-6 relative">
+                <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide">
+                  {imageGallery.map((img, index) => (
+                    <div key={index} className="flex-none w-72 relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-200"></div>
+                      <div className="relative bg-white rounded-lg overflow-hidden">
+                        <div className="p-2 border-8 border-gray-200 rounded-md">
+                          <img
+                            src={img}
+                            alt={`Image ${index + 1}`}
+                            className="w-full h-40 object-cover hover:scale-105 transition-transform duration-300 cursor-pointer rounded-md"
+                            onClick={() => setSelectedImage(img)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+            {/* Facts Section - Redesigned to match mobile view */}
+            <div className="space-y-3 mt-6">
+              {facts?.map((fact, index) => (
                 <div
                   key={index}
-                  className="flex-1 min-w-[200px] p-3 rounded-xl bg-white shadow-sm border border-blue-100 hover:shadow-md transition-all cursor-pointer"
+                  className="relative group"
                 >
-                  <div className="font-bold text-indigo-700 text-sm mb-1">
-                    {fact.title}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {fact.content}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-200"></div>
+                  <div className="relative p-4 bg-white rounded-lg border-8 border-gray-100">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <span className="text-xl">{fact.emoji}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-800 mb-1">{fact.title}</h3>
+                        <p className="text-sm text-gray-600">{fact.content}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          
-          <div className="md:col-span-2 space-y-3">
-            <img
-              src={imageUrl || "/placeholder.svg"}
-              alt={title}
-              className="w-full h-48 object-cover rounded-xl shadow-md hover:shadow-xl transition-shadow"
-            />
-            <div className="grid grid-cols-3 gap-2">
-              {imageGallery.slice(0, 3).map((img, index) => (
-                <img
-                  key={index}
-                  src={img || "/placeholder.svg"}
-                  alt={`${title} gallery ${index + 1}`}
-                  className="w-full h-20 object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        </CardContent>
       </Card>
 
-      {/* Video Carousel */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {videoResult?.slice(0, 3).map((video, index) => (
-          <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="aspect-video">
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${video.videoId}`}
-                title={video.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+      {/* Video Section */}
+      <div className="mt-6 relative">
+        <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide">
+          {videoResult?.map((video, index) => (
+            <div key={index} className="flex-none w-80 relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-200"></div>
+              <div className="relative bg-white rounded-lg overflow-hidden">
+                <div className="p-2 border-8 border-gray-200 rounded-md">
+                  <div className="aspect-video">
+                    <iframe
+                      className="w-full h-full rounded-md"
+                      src={`https://www.youtube.com/embed/${video.videoId}`}
+                      title={video.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                  <div className="mt-2">
+                    <h3 className="text-sm font-medium line-clamp-2 text-gray-800">{video.title}</h3>
+                  </div>
+                </div>
+              </div>
             </div>
-            <CardHeader className="p-3">
-              <CardTitle className="text-sm font-medium line-clamp-2">{video.title}</CardTitle>
-            </CardHeader>
-          </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Related Topics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {relatedTopics.map((topic, index) => (
+          <div key={index} className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-200"></div>
+            <Card className="relative bg-white overflow-hidden border-0">
+              <div className="relative h-48">
+                <img
+                  src={topic.imageUrl || "/placeholder.svg"}
+                  alt={topic.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onClick={() => setSelectedImage(topic.imageUrl)}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <CardTitle className="absolute bottom-3 left-3 text-white text-lg font-semibold">
+                  {topic.title}
+                </CardTitle>
+              </div>
+              <CardContent className="p-4">
+                <p className="text-sm text-gray-600 line-clamp-2">{topic.description}</p>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
 
-      {/* Related Topics as Interactive Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {relatedTopics.map((topic, index) => (
-          <Card 
-            key={index} 
-            className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden"
-          >
-            <div className="relative h-32">
-              <img
-                src={topic.imageUrl || "/placeholder.svg"}
-                alt={topic.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <CardTitle className="absolute bottom-2 left-2 text-white text-lg">
-                {topic.title}
-              </CardTitle>
-            </div>
-            <CardContent className="p-3">
-              <p className="text-sm text-gray-600 line-clamp-2">{topic.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Image Preview Dialog */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-4xl">
+        
+            <DialogTitle>Image Preview</DialogTitle>
+          <img 
+            src={selectedImage || "/placeholder.svg"} 
+            alt="Preview"
+            className="w-full h-auto object-contain"
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

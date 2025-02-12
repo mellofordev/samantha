@@ -14,6 +14,7 @@ import { knowledge_graph, operator, operator_completed } from "@/lib/schema/func
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Inter } from 'next/font/google';
 import WeatherCard, { WeatherData } from "./animata/widget/weather-card";
+import { Instrument_Serif } from "next/font/google";
 
 const inter = Inter({ 
   weight: '700',
@@ -104,7 +105,7 @@ export function AppSidebar() {
     <Sidebar className="dark text-white border-r border-white/10 border-dashed">
       <SidebarHeader className="flex flex-row justify-between items-center p-4 m-2">
         <div className="flex items-center gap-2">
-          <h1 className={`text-xl font-bold text-white ${inter.className}`}>
+          <h1 className={`font-instrument-serif text-xl font-bold text-white `}>
             AutoCompute
           </h1>
         </div>

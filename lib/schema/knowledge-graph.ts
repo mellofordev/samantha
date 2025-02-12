@@ -17,8 +17,14 @@ export const knowledgeGraphSchema = z.object({
   imageGallery: z.array(z.string()).describe('Array of image URLs for the gallery'),
   facts: z.array(z.object({
     title: z.string().describe('Title of the fact'),
+    emoji: z.string().describe('An emoji that represents the fact'),
     content: z.string().describe('Content of the fact')
-  })).describe('Array of key facts about the topic')
+  })).describe('Array of key facts about the topic'),
+  search_results: z.array(z.object({
+    title: z.string().describe("The title of the search result"),
+    url: z.string().describe("The url of the search result"),
+    content: z.string().describe("The content of the search result"),
+  })).describe('Array of search results')
 });
 
 export type KnowledgeGraphData = z.infer<typeof knowledgeGraphSchema>; 

@@ -10,8 +10,16 @@ export default function Page() {
         <div
           className="absolute inset-0 rounded-3xl"
           style={{
+            backgroundImage: `url('/cloud_bg.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <div
+          className="absolute inset-0 rounded-3xl"
+          style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-            opacity: 0.05,
+            opacity: 0.15,
           }}
         />
       </div>
@@ -21,7 +29,7 @@ export default function Page() {
         {/* Navigation Bar */}
         <nav className="w-full px-8 h-16 flex items-center justify-between border-b border-dashed border-white/10">
           <div className="font-instrument-serif text-2xl text-white">
-            Samantha
+            AutoCompute
           </div>
           <div className="hidden md:flex space-x-8">
             <a
@@ -63,13 +71,13 @@ export default function Page() {
             {/* Text Content */}
             <div className="max-w-2xl mx-auto text-center">
               <h1 className="text-6xl font-bold text-white tracking-tight">
-                Meet{" "}
+                Meet
                 <span className="font-instrument-serif font-normal">
-                  Samantha
+                  AutoCompute
                 </span>
               </h1>
               <p className="mt-4 text-lg text-white/90">
-                a teacher that dont judge you!
+              automatically controlling computer 
               </p>
               <div className="mt-6">
                 <SignedOut>
