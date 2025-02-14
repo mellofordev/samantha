@@ -15,11 +15,11 @@ export const knowledgeGraphSchema = z.object({
     videoId: z.string().describe('Video ID of the relevant video, provide emtpy string now, the url will be fetched from external api'),
   })).describe('Featured videos about the topic'),
   imageGallery: z.array(z.string()).describe('Array of image URLs for the gallery'),
-  facts: z.array(z.object({
-    title: z.string().describe('Title of the fact'),
-    emoji: z.string().describe('An emoji that represents the fact'),
-    content: z.string().describe('Content of the fact')
-  })).describe('Array of key facts about the topic'),
+  quick_insights: z.array(z.object({
+    title: z.string().describe('Title of the insight'),
+    emoji: z.string().describe('An emoji that represents the insight'),
+    content: z.string().describe('Content of the insight')
+  })).describe('Array of key insights about the topic'),
   search_results: z.array(z.object({
     title: z.string().describe("The title of the search result"),
     url: z.string().describe("The url of the search result"),

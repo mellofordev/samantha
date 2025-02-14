@@ -2,7 +2,8 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph"
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { X } from "lucide-react"
 export function KnowledgeGraphBento({
   title,
   description,
@@ -10,7 +11,7 @@ export function KnowledgeGraphBento({
   relatedTopics,
   videoResult,
   imageGallery,
-  facts,
+  quick_insights,
   search_results,
 }: KnowledgeGraphData) {
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -57,7 +58,7 @@ export function KnowledgeGraphBento({
             </div>
             {/* Facts Section - Redesigned to match mobile view */}
             <div className="space-y-3 mt-6">
-              {facts?.map((fact, index) => (
+              {quick_insights?.map((insight, index) => (
                 <div
                   key={index}
                   className="relative group"
@@ -66,11 +67,11 @@ export function KnowledgeGraphBento({
                   <div className="relative p-4 bg-white rounded-lg border-8 border-gray-100">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0">
-                        <span className="text-xl">{fact.emoji}</span>
+                        <span className="text-xl">{insight.emoji}</span>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800 mb-1">{fact.title}</h3>
-                        <p className="text-sm text-gray-600">{fact.content}</p>
+                        <h3 className="font-semibold text-gray-800 mb-1">{insight.title}</h3>
+                        <p className="text-sm text-gray-600">{insight.content}</p>
                       </div>
                     </div>
                   </div>
@@ -136,14 +137,19 @@ export function KnowledgeGraphBento({
 
       {/* Image Preview Dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl">
         
-            <DialogTitle>Image Preview</DialogTitle>
-          <img 
-            src={selectedImage || "/placeholder.svg"} 
-            alt="Preview"
-            className="w-full h-auto object-contain"
-          />
+        <DialogContent>
+          <div className="flex flex-col gap-5 relative">
+          <DialogTitle className="text-black/90 absolute top-4 left-4 z-10">
+            </DialogTitle>
+            <div className="mt-8">
+              <img 
+                src={selectedImage || "/placeholder.svg"} 
+                alt="Preview"
+                className="w-full h-auto object-contain rounded-lg"
+              />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-
+import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
 export default function Page() {
   return (
     <div className="h-screen flex flex-col relative overflow-hidden bg-[#181818]">
@@ -18,8 +18,7 @@ export default function Page() {
         <div
           className="absolute inset-0 rounded-3xl"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-            opacity: 0.15,
+            backgroundImage: `url("/noise.png")`,
           }}
         />
       </div>
@@ -40,6 +39,9 @@ export default function Page() {
             </a>
             <a href="#blog" className="text-sm text-white/90 hover:text-white">
               Blog
+            </a>
+            <a href="#blog" className="text-sm text-white/90 hover:text-white">
+              Education
             </a>
           </div>
           <div className="flex items-center space-x-4">
@@ -79,7 +81,7 @@ export default function Page() {
               <p className="mt-4 text-lg text-white/90">
               automatically controlling computer 
               </p>
-              <div className="mt-6">
+              <div className="mt-6 gap-4">
                 <SignedOut>
                   <Link href="/sign-in">
                     <Button variant={"secondary"}>Try for free</Button>
@@ -90,20 +92,8 @@ export default function Page() {
                     <Button variant={"secondary"}>Go to Dashboard</Button>
                   </Link>
                 </SignedIn>
+                <HeroVideoDialog  videoSrc="https://www.youtube.com/embed/hqJDKTqCESE" thumbnailSrc="https://mediaproxy.salon.com/width/1200/https://media2.salon.com/2013/12/her2.jpg" className="w-[650px] h-[400px] mt-4"/>
               </div>
-            </div>
-
-            {/* Preview Section */}
-            <div className="w-[650px] h-[400px] relative mx-auto rounded-xl overflow-hidden border border-white/20">
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/hqJDKTqCESE"
-                title="Samantha Demo Video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="relative w-full h-full object-cover z-10"
-              ></iframe>
             </div>
           </div>
         </main>

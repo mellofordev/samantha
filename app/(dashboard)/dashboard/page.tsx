@@ -9,17 +9,18 @@ import {
   operator,
   operator_completed,
 } from "@/lib/schema/function-call";
-import { generateUI, agent, generateKnowledgeGraph, getSearchResults } from "@/app/actions";
+import { generateUI, agent, generateKnowledgeGraph } from "@/app/actions";
 import Welcome from "@/components/welcome";
 import { automationStore } from "@/lib/store/automation-store";
-import { readStreamableValue } from 'ai/rsc';
 import { KnowledgeGraphBento } from "@/components/knowledge-graph";
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph";
+import { SpotlightSearch } from "@/components/spotlight-search";
+
 const EXTENSION_ID = "kedicgkkepbajabaahchaahppidgjica";
 export const maxDuration = 30;
 export default function Home() {
   const { client } = useLiveAPIContext();
-  const [generatedObject, setGeneratedObject] = useState<any>();
+  const [generatedObject, setGeneratedObject] = useState<KnowledgeGraphData | null>(null);
   const [isFirstTask, setIsFirstTask] = useState(true);
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
@@ -30,7 +31,7 @@ export default function Home() {
           if (fc.name === knowledge_graph.name) {
             console.log("Knowledge Graph Call:", fc.args.knowledge_graph);
             const response = await generateKnowledgeGraph(fc.args.knowledge_graph);
-            setGeneratedObject(response);
+            setGeneratedObject(response as KnowledgeGraphData);
             client.sendToolResponse({
               functionResponses: [
                 {
@@ -279,6 +280,7 @@ export default function Home() {
 
   return (
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
+      <SpotlightSearch />
       <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
         <div className="min-h-full ml-64 rounded-3xl  overflow-auto relative z-10 ">
           {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}

@@ -1,9 +1,8 @@
 "use server";
-import { createStreamableValue, streamUI } from "ai/rsc";
-import { CoreMessage, generateObject, generateText, streamObject, ToolResultPart } from "ai";
-import { google } from "@ai-sdk/google";
-import { object, z } from "zod";
-import { KnowledgeGraphBento } from "@/components/knowledge-graph";
+import { streamUI } from "ai/rsc";
+import { CoreMessage, generateObject, generateText } from "ai";
+import { createGoogleGenerativeAI} from "@ai-sdk/google";
+import {z } from "zod";
 import { JSDOM } from 'jsdom';
 
 interface SearchResult {
@@ -13,7 +12,9 @@ interface SearchResult {
 }
 
 declare const chrome: any; // Quick fix
-
+const perform_agent = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AGENT_API_KEY,
+})
 // Function to fetch video from YouTube API
 async function fetchYouTubeVideo(query: string) {
   const response = await fetch(
@@ -127,10 +128,10 @@ export async function extractUsefulDomElements(dom: string) {
   
   // Extract important elements while keeping React structure
   const interactiveElements = extractInteractiveElements(cleanedDom);
-  
+  console.log(interactiveElements)
   // Second pass: Use AI to refine while preserving React functionality
   const response = await generateText({
-    model: google('gemini-2.0-flash'),
+    model: perform_agent('gemini-2.0-flash'),
     system: `
     You are an expert in React and DOM analysis. Your task is to analyze the pre-cleaned DOM and:
     1. Preserve all React-specific attributes and structures
@@ -189,7 +190,7 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
 
   const response = await generateObject({
     messages: messages,
-    model: google("gemini-2.0-flash"),
+    model: perform_agent("gemini-2.0-flash"),
     schemaName: "browser_automation",
     system: `
     You are an expert browser automation agent. Your role is to break down user tasks into sequential browser operations and generate precise JavaScript code for each step.
@@ -241,7 +242,7 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
 }
 export async function generateUI(prompt: string) {
   const result = await streamUI({
-    model: google("gemini-2.0-flash"),
+    model: perform_agent("gemini-2.0-flash"),
     prompt: `<query_analysis>
   <user_input>${prompt}</user_input>
   <objective>Process query for knowledge graph generation</objective>
@@ -365,12 +366,17 @@ For information queries like "tell me about Einstein" or "latest news on AI", ge
   return result.value;
 }
 export async function generateKnowledgeGraph(prompt: string) {
+    const searchResults = await getSearchResults(prompt);
     const response = await generateObject({
-      model: google("gemini-2.0-flash"),
+      model: perform_agent("gemini-2.0-flash"),
       prompt: `<query_analysis>
       <user_input>${prompt}</user_input>
       <objective>Process query for knowledge graph generation</objective>
-    </query_analysis>`,
+    </query_analysis>
+      <search_results>
+        ${searchResults.results.map((result) => `<title>${result.title}</title> <content>${result.content}</content>`).join(", ")}
+      </search_results>
+    `,
 
       system: `
       <assistant_role>
@@ -419,24 +425,23 @@ export async function generateKnowledgeGraph(prompt: string) {
           .describe(
             "Connected concepts and subtopics that provide broader context"
           ),
-        facts: z
+        quick_insights: z
           .array(
             z.object({
-              title: z.string().describe("Concise fact title or category"),
+              title: z.string().describe("Insights title"),
               emoji: z.string().describe("An emoji that represents the fact"),
               content: z
                 .string()
                 .describe(
-                  "Detailed explanation of the fact with supporting information"
+                  "Detailed explanation of the insights with supporting information"
                 ),
             })
           )
           .describe(
-            "Key facts, statistics, and important details about the topic"
+            "Key insights, statistics, and important details about the topic"
           ),
         })
     });
-    const searchResults = await getSearchResults(response.object.title);
     const videoResult = await fetchYouTubeVideo(response.object.title);
     try {
       const knowledgeGraphData = {
@@ -449,7 +454,7 @@ export async function generateKnowledgeGraph(prompt: string) {
         })),
         videoResult: videoResult,
         imageGallery: searchResults.images || ["/placeholder.svg"],
-        facts: response.object.facts,
+        quick_insights: response.object.quick_insights,
         search_results: searchResults.results,
       };
 
