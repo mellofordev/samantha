@@ -45,7 +45,7 @@ export default function AudioPulse({ active, volume, hover = false }: AudioPulse
         .map((_, i) => (
           <div
             key={i}
-            className={`w-0.5 bg-gray-700 rounded-full transition-all duration-200 ease-in-out animate-pulse`}
+            className={`w-0.5 bg-white rounded-full transition-all duration-200 ease-in-out animate-pulse`}
             style={{
               height: '4px',
               animationDelay: `${i * 133}ms`,

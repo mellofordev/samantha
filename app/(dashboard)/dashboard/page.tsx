@@ -282,7 +282,7 @@ export default function Home() {
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
       <SpotlightSearch />
       <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
-        <div className="min-h-full ml-64 rounded-3xl  overflow-auto relative z-10 ">
+        <div className="min-h-full ml-64 rounded-3xl  overflow-auto relative z-10  bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid ">
           {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
         </div>
       </main>

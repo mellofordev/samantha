@@ -53,13 +53,13 @@ export default function Page() {
                 Sign In
               </a>
               <Link href="/dashboard">
-                <Button variant={"secondary"}>Try for free</Button>
+                <Button variant={"default"}>Try for free</Button>
               </Link>
             </SignedOut>
             <SignedIn>
               <UserButton />
               <Link href="https://wa.me/918075496634" target="_blank">
-              <Button variant={"secondary"}>
+              <Button variant={'default'}>
                 Contact us
               </Button>
             </Link>
@@ -84,12 +84,12 @@ export default function Page() {
               <div className="mt-6 gap-4">
                 <SignedOut>
                   <Link href="/sign-in">
-                    <Button variant={"secondary"}>Try for free</Button>
+                    <Button variant={"default"}>Try for free</Button>
                   </Link>
                 </SignedOut>
                 <SignedIn>
                   <Link href="/dashboard">
-                    <Button variant={"secondary"}>Go to Dashboard</Button>
+                    <Button variant={"default"} className="h-14 rounded-lg">Go to Dashboard</Button>
                   </Link>
                 </SignedIn>
                 <HeroVideoDialog  videoSrc="https://www.youtube.com/embed/hqJDKTqCESE" thumbnailSrc="https://mediaproxy.salon.com/width/1200/https://media2.salon.com/2013/12/her2.jpg" className="w-[650px] h-[400px] mt-4"/>

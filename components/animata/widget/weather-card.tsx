@@ -17,7 +17,7 @@ interface WeatherCardProps {
 
 function WeatherSkeleton() {
   return (
-    <div className="relative flex w-full flex-col rounded-2xl bg-white/5 p-4 backdrop-blur-sm backdrop-filter border border-white/10">
+    <div className="relative flex w-full flex-col rounded-2xl bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border-t border-[rgba(255,255,255,0.32)] border-solid p-4">
       <div className="flex flex-1 flex-col gap-3 text-white/90">
         {/* Location skeleton */}
         <div className="h-4 w-24 animate-pulse rounded-md bg-white/10" />
@@ -33,7 +33,7 @@ function WeatherSkeleton() {
       </div>
       
       {/* Humidity section skeleton */}
-      <div className="mt-4 flex justify-between rounded-lg bg-white/5 px-3 py-2">
+      <div className="mt-4 flex justify-between rounded-lg bg-[rgba(150,150,150,0.2)] backdrop-blur-[24px] border-t border-[rgba(255,255,255,0.32)] border-solid px-3 py-2">
         <div className="flex items-center gap-2">
           <div className="h-4 w-16 animate-pulse rounded-md bg-white/10" />
           <div className="h-4 w-8 animate-pulse rounded-md bg-white/10" />
@@ -50,7 +50,7 @@ export default function WeatherCard({ weather, location, isLoading }: WeatherCar
 
   if (!weather) {
     return (
-      <div className="relative flex w-full flex-col rounded-2xl bg-white/5 p-4 backdrop-blur-sm backdrop-filter border border-white/10">
+      <div className="relative flex w-full flex-col rounded-2xl bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border-t border-[rgba(255,255,255,0.32)] border-solid p-4">
         <p className="text-white/70">Unable to load weather data</p>
       </div>
     );
@@ -62,7 +62,7 @@ export default function WeatherCard({ weather, location, isLoading }: WeatherCar
   );
 
   return (
-    <div className="relative flex w-full flex-col rounded-2xl bg-white/5 p-4 backdrop-blur-sm backdrop-filter border border-white/10">
+    <div className="relative flex w-full flex-col rounded-2xl bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border-t border-[rgba(154,154,154,0.32)] border-solid p-4">
       <div className="flex flex-1 flex-col gap-3 text-white/90">
         <p className="text-sm font-medium text-white/70">{location}</p>
         <div className="flex items-center gap-3">
@@ -73,7 +73,7 @@ export default function WeatherCard({ weather, location, isLoading }: WeatherCar
           Feels like {feelsLike}° • Wind: {Math.round(weather.current.wind_speed_10m)} km/h
         </p>
       </div>
-      <div className="mt-4 flex justify-between rounded-lg bg-white/5 px-3 py-2">
+      <div className="mt-4 flex justify-between rounded-lg bg-[rgba(150,150,150,0.2)] backdrop-blur-[24px] border-t border-[rgba(217,216,216,0.32)] border-solid px-3 py-2">
         <div className="flex items-center gap-1 text-sm text-white/80">
           <span>Humidity:</span>
           <span>{Math.round(weather.current.relative_humidity_2m)}%</span>

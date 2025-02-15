@@ -115,7 +115,7 @@ export function AppSidebar() {
       <SidebarContent>
         {videoStream && (
           <div className="space-y-4 p-4">
-            <div className="aspect-video relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+            <div className="aspect-video relative overflow-hidden rounded-xl  bg-black/20 backdrop-blur-[24px] border border-[rgba(179,177,177,0.32)] border-solid">
               <video
                 ref={videoRef}
                 autoPlay

@@ -16,6 +16,7 @@ import {
   Play,
   Pause
 } from "lucide-react";
+import { Button } from "./ui/button";
 
 export type ControlTrayProps = {
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -42,12 +43,13 @@ const MediaStreamButton = memo(
       (offIcon === 'videocam' ? Video : Monitor);
 
     return (
-      <button 
-        className="p-1.5 rounded-lg hover:bg-gray-100/80 transition-colors text-gray-700" 
+      <Button 
+        variant={'default'}
+        className="p-2.5 rounded-lg"
         onClick={isStreaming ? stop : start}
       >
         <IconComponent className="w-4 h-4" />
-      </button>
+      </Button>
     );
   }
 );
@@ -155,10 +157,11 @@ function ControlTray({
 
   return (
     <div className="px-4 pb-4">
-      <section className="relative flex items-center justify-between p-2 bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-lg rounded-2xl gap-2">
+      <section className="relative flex items-center justify-between p-2 bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border-t border-[rgba(255,255,255,0.32)] border-solid rounded-2xl gap-2">
         <nav className={`flex items-center gap-1.5 ${!connected ? 'opacity-50 pointer-events-none' : ''}`}>
-          <button
-            className={`p-1.5 rounded-lg hover:bg-gray-100/80 transition-colors text-gray-700`}
+          <Button
+            variant={'default'}
+            className="p-2.5 rounded-lg"
             onClick={() => setMuted(!muted)}
           >
             {!muted ? (
@@ -166,9 +169,9 @@ function ControlTray({
             ) : (
               <MicOff className="w-4 h-4" />
             )}
-          </button>
+          </Button>
 
-          <div className="p-1.5 rounded-lg border border-gray-200/50">
+          <div className="p-1.5 rounded-lg bg-[rgba(150,150,150,0.2)] backdrop-blur-[24px] border-t border-[rgba(255,255,255,0.32)] border-solid">
             <AudioPulse volume={volume} active={connected} hover={false} />
           </div>
           <canvas style={{ display: "none" }} ref={renderCanvasRef} />
@@ -194,12 +197,13 @@ function ControlTray({
         </nav>
 
         <div className={`flex items-center gap-1.5 ${connected ? 'text-emerald-600' : 'text-gray-400'}`}>
-          <button
+          <Button
+            variant={'default'}
             ref={connectButtonRef}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-lg ${
               connected 
-                ? 'bg-emerald-500 hover:bg-emerald-600 text-white' 
-                : 'bg-gray-100/80 hover:bg-gray-200/80 text-gray-700'
+                ? ' text-emerald-500' 
+                : ' text-white'
             }`}
             onClick={connected ? disconnect : connect}
           >
@@ -208,7 +212,7 @@ function ControlTray({
             ) : (
               <Play className="w-4 h-4" />
             )}
-          </button>
+          </Button>
         </div>
       </section>
     </div>
