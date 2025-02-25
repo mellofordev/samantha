@@ -10,7 +10,7 @@ export default function Welcome() {
      <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url('/cloud_bg.png')`,
+              backgroundImage: `url('/cloud2.avif')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: isNightOrEvening ? "brightness(0.6)" : "none",

@@ -22,6 +22,7 @@ export default function Home() {
   const { client } = useLiveAPIContext();
   const [generatedObject, setGeneratedObject] = useState<KnowledgeGraphData | null>(null);
   const [isFirstTask, setIsFirstTask] = useState(true);
+  const [screenshot, setScreenshot] = useState<string | undefined>(undefined);
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
       console.log(`got toolcall`, toolCall);
@@ -49,13 +50,13 @@ export default function Home() {
           }
           if (fc.name === operator.name) {
             const storedState = automationStore.getState();
-            const currentProgress =
-              fc.args.agent_progress || storedState.agent_progress;
+
 
             // For first task, use user_task, otherwise use the current progress
-            const taskInput = isFirstTask ? fc.args.user_task : currentProgress;
+            const taskInput = isFirstTask ? fc.args.user_task : fc.args.agent_progress;
             console.log("Current task input:", taskInput);
-
+            console.log("passed screenshot ", storedState.screenshot);
+            setScreenshot(storedState.screenshot || undefined);
             const task = await agent(
               taskInput,
               storedState.screenshot,
@@ -97,7 +98,10 @@ export default function Home() {
                               output: {
                                 is_task_finished:
                                   task.is_full_user_task_finished,
-                                agent_progress: task.next_step,
+                                next_step: task.next_step,
+                                tab_id: storedState.tabID,
+                                visual_discription_ui: `visual discription of the webpage UI: ${task.visual_discription_ui} \n\n Use this information to find the ways to perform the task for the user`,
+                                tab_opened: true,
                                 success: true,
                               },
                             },
@@ -148,7 +152,7 @@ export default function Home() {
                               output: {
                                 is_task_finished:
                                   task.is_full_user_task_finished,
-                                agent_progress: task.next_step,
+                                next_step: task.next_step,
                                 success: true,
                               },
                             },
@@ -194,7 +198,7 @@ export default function Home() {
                               output: {
                                 is_task_finished:
                                   task.is_full_user_task_finished,
-                                agent_progress: task.next_step,
+                                next_step: task.next_step,
                                 success: true,
                               },
                             },
@@ -214,6 +218,54 @@ export default function Home() {
                 );
                 break;
               }
+              case "EXTRACT": {
+                console.log("storedState", storedState.tabID);
+                chrome.runtime.sendMessage(
+                  EXTENSION_ID,
+                  {
+                    action: "EXTRACT",
+                    payload: {
+                      script: task.extract_selectors,
+                      tabId: storedState.tabID,
+                    },
+                  },
+                  async function (response: any) {
+                    if (response?.success) {
+                      automationStore.setState({
+                        domElements: response.extracteData,
+                        screenshot: response.screenshot,
+                      });
+
+                      client.sendToolResponse({
+                        functionResponses: [
+                          {
+                            response: {
+                              output: {
+                                is_task_finished:
+                                  task.is_full_user_task_finished,
+                                next_step: task.next_step,
+                                extracted_data: response.extractedData,
+                                success: true,
+                              },
+                            },
+                            id: fc.id,
+                          },
+                        ],
+                      });
+                    } else {
+                      handleError(
+                        client,
+                        fc.id,
+                        task.next_step,
+                        response?.error
+                      );
+                    }
+                  }
+                );
+                break;
+              }
+              
+              
 
               default: {
                 console.error("Unsupported task enum:", task.task_enum);
@@ -283,7 +335,8 @@ export default function Home() {
       <SpotlightSearch />
       <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
         <div className="min-h-full ml-64 rounded-3xl  overflow-auto relative z-10  bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid ">
-          {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
+          {screenshot && <img src={screenshot} alt="screenshot" className="w-full h-full object-cover" />}
+          {!screenshot && generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
         </div>
       </main>
     </div>

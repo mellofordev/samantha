@@ -1,7 +1,8 @@
 "use server";
 import { streamUI } from "ai/rsc";
-import { CoreMessage, generateObject, generateText } from "ai";
+import { CoreMessage, generateObject, generateText, LanguageModelV1 } from "ai";
 import { createGoogleGenerativeAI} from "@ai-sdk/google";
+import { groq } from "@ai-sdk/groq";
 import {z } from "zod";
 import { JSDOM } from 'jsdom';
 
@@ -14,6 +15,9 @@ interface SearchResult {
 declare const chrome: any; // Quick fix
 const perform_agent = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AGENT_API_KEY,
+})
+const perform_extractor = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_EXTRACTOR_API_KEY,
 })
 // Function to fetch video from YouTube API
 async function fetchYouTubeVideo(query: string) {
@@ -119,8 +123,83 @@ function extractInteractiveElements(dom: string): string {
 
   return allElements;
 }
+const generateChunks = (html: string, maxChunkElements: number = 4): string[] => {
+  const chunks: string[] = [];
+  
+  // Parse the input HTML string
+  const dom = new JSDOM(html);
+  const document = dom.window.document;
+  
+  // Get root level elements to preserve DOM structure
+  const rootElements = Array.from(document.body.children);
+  
+  let currentChunk: Element[] = [];
+  let currentChunkText = '';
+  const maxChunkLength = 4096; // Context window size
+  
+  const processElement = (element: Element) => {
+    const elementHtml = element.outerHTML;
+    
+    // Check if adding this element would exceed max chunk length
+    if (currentChunkText.length + elementHtml.length > maxChunkLength) {
+      if (currentChunk.length > 0) {
+        chunks.push(currentChunkText);
+        if (chunks.length >= 5) {
+          return; // Stop if we hit max chunks
+        }
+        currentChunk = [];
+        currentChunkText = '';
+      }
+    }
+    
+    // Handle elements that are larger than max chunk size
+    if (elementHtml.length > maxChunkLength) {
+      // Split while preserving tags
+      const openTag = elementHtml.match(/<[^>]*>/)?.[0] || '';
+      const closeTag = elementHtml.match(/<\/[^>]*>$/)?.[0] || '';
+      const inner = elementHtml.slice(openTag.length, -closeTag.length);
+      
+      let pos = 0;
+      while (pos < inner.length && chunks.length < 5) {
+        const chunk = openTag + 
+          inner.slice(pos, pos + maxChunkLength - openTag.length - closeTag.length) +
+          closeTag;
+        chunks.push(chunk);
+        pos += maxChunkLength - openTag.length - closeTag.length;
+      }
+      return;
+    }
+    
+    currentChunk.push(element);
+    currentChunkText += elementHtml;
+  };
 
-export async function extractUsefulDomElements(dom: string) {
+  // Process each root element
+  for (const element of rootElements) {
+    if (chunks.length >= 5) break;
+    processElement(element);
+  }
+
+  // Add final chunk if needed
+  if (currentChunkText && chunks.length < 5) {
+    chunks.push(currentChunkText);
+  }
+
+  return chunks;
+};
+export async function parrallelCall(chunks: string[], task: string) {
+  const responses = await Promise.all(chunks.map(chunk => generateObject({
+    system:'You are DOM extractor and your are given with portions of dom elements of the website as chunk, your duty is to undertstand the dom and take out the selector that matches with the current task or step',
+    model: perform_extractor('gemini-2.0-flash'),
+    prompt: `This is the dom chunk: ${chunk} \n This is the task: ${task}`,
+    schema: z.object({
+      selector: z.string().describe("The selector for the current step that handles the specified task_enum operation, this selector should be a valid selector for the current step and should be from the dom of the website. Output only one selector for the current step. this selector will be used to click on the element or input the text or scroll to the element or wait for the element to load or perform any other action."),
+      selector_array: z.array(z.string()).describe("The array of selectors which should be only be activated in the case like extract, in all other cases it should be an empty array"),
+    })
+  })));
+  return responses;
+}
+export async function extractUsefulDomElements(dom: string,task: string) {
   // First pass: Basic cleanup while preserving React structure
   let cleanedDom = dom;
   cleanedDom = removeScriptAndStyleTags(cleanedDom);
@@ -128,12 +207,16 @@ export async function extractUsefulDomElements(dom: string) {
   
   // Extract important elements while keeping React structure
   const interactiveElements = extractInteractiveElements(cleanedDom);
-  console.log(interactiveElements)
+  // console.log(interactiveElements)
+  const chunks = generateChunks(interactiveElements);
+
+  const responses = await parrallelCall(chunks, task);
+
   // Second pass: Use AI to refine while preserving React functionality
-  const response = await generateText({
+  const response = await generateObject({
     model: perform_agent('gemini-2.0-flash'),
     system: `
-    You are an expert in React and DOM analysis. Your task is to analyze the pre-cleaned DOM and:
+    You are an expert in React and DOM analysis. Your task is to analyze the  DOM selectors and choose a selector based on the task and the dom:
     1. Preserve all React-specific attributes and structures
     2. Maintain component hierarchy and event handlers
     3. Keep data-* attributes and React testing selectors
@@ -141,22 +224,29 @@ export async function extractUsefulDomElements(dom: string) {
     5. Preserve state management related attributes
     6. Keep class names used for styling and component identification
     `,
+    schema: z.object({
+      selector: z.string().describe("The selector for the current step that handles the specified task_enum operation, this selector should be a valid selector for the current step and should be from the dom of the website. Output only one selector for the current step. this selector will be used to click on the element or input the text or scroll to the element or wait for the element to load or perform any other action."),
+    }),
     prompt: `
-    <pre_cleaned_dom>${interactiveElements}</pre_cleaned_dom>
+    <dom_objects>
+    ${responses.map(response => response.object.selector).join("\n")}
+    </dom_objects>
     <objective>Refine the DOM while maintaining React application functionality</objective>
     `
   });
 
-  return response.text;
+  return response.object;
 }
 
 export async function agent(user_task: string, screenshot?: string, dom?: string) {
   let messages: CoreMessage[] = [];
-  let cleanedDom: string | undefined;
+  let selector: string | undefined;
 
   // Clean DOM if provided
   if (dom) {
-    cleanedDom = await extractUsefulDomElements(dom);
+    const extractedData = await extractUsefulDomElements(dom, user_task);
+    selector = extractedData.selector;
+    console.log(selector)
   }
 
   // Add initial user task
@@ -178,12 +268,12 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
     });
   }
   
-  if (cleanedDom) {
+  if (selector) {
     messages.push({
       role: 'user',
       content: [{
         type: 'text',
-        text: cleanedDom
+        text: `useful selector for the current step: ${selector}`
       }],
     });
   }
@@ -193,39 +283,37 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
     model: perform_agent("gemini-2.0-flash"),
     schemaName: "browser_automation",
     system: `
-    You are an expert browser automation agent. Your role is to break down user tasks into sequential browser operations and generate precise JavaScript code for each step.
-
+    You are an expert browser automation agent. Your role is to break down user tasks into sequential browser operations and generate the selectors for the current step so that the chrome extension can perform the task by using the selector with the appropriate task_enum.
+    You are also provided with screenshot of the current page , understand the UI of the webpage and find useful items that you can use to perform the task 
+    Some website dont have enter button , but in the task given there will be something like click on the search button , in such cases you need to find the way to do the task by understanding the UI of the webpage  and use the appropriate selector for the current step
     Task Execution Flow:
     1. Every automation sequence MUST start with GO_TO_URL to establish the working tab
     2. Analyze the target website's DOM structure when available
     3. Break complex user tasks into atomic operations
-    4. Generate precise JavaScript code for each operation
+    4. From the Dom of the website , take appropriate selector for the current step to pass to the extension
+
 
     Available Operations (task_enum):
     - GO_TO_URL: Opens a new tab with specified URL (Required first step)
     - EXTRACT: Extracts data, text, or elements from the page
     - CLICK: Clicks on any interactive element (buttons, links, dropdowns)
     - TYPE: Enters text into input fields
-    - SCROLL: Controls page scrolling (up, down, to element)
-    - WAIT: Waits for elements or content to load
-    - ACT: Performs complex actions (drag-drop, hover, file upload)
+  
 
-    Your JavaScript code must:
-    - Use robust selectors (ID, class, XPath, or CSS combinations)
-    - Include error handling and retries
-    - Handle dynamic content loading
-    - Scroll elements into view before interaction
-    - Return operation success/failure status
+    
 
     Return format must include:
     - Current step's task_enum
     - Clear description of current action
     - Progress status
     - Context details (URL, search terms, etc.)
-    - Executable JavaScript code for the current step
+    - Selector from the dom to handle the current step , this selector is passed to the extension for doing task like click , type etc
+    If already a tab is opened then use the tab_id to perform the task on the same tab 
+    If a task is on the progress do not generate GO_TO_URL again 
+    If GO_TO_URL is given for initial step then do not generate it again as the tab will be already opened 
     `,
     schema: z.object({
-      task_enum: z.enum(["GO_TO_URL", "EXTRACT", "CLICK", "TYPE", "SCROLL", "WAIT", "ACT"]),
+      task_enum: z.enum(["GO_TO_URL", "EXTRACT", "CLICK", "TYPE"]),
       current_step: z.string().describe("Description of the current atomic operation being performed"),
       is_full_user_task_finished: z.boolean().describe("Indicates whether the complete user task has been accomplished"),
       next_step: z.string().describe("Description of the next atomic operation to be performed , if the previous step failed or not successful then the next step should be the same step again"),
@@ -235,6 +323,7 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
       }),
       selector: z.string().describe("The selector for the current step that handles the specified task_enum operation, this selector should be a valid selector for the current step and should be from the dom of the website. Output only one selector for the current step. this selector will be used to click on the element or input the text or scroll to the element or wait for the element to load or perform any other action."),
       extract_selectors: z.array(z.string()).describe("These are the selectors that will be used to extract the data from the page, this is an array of selectors"),
+      visual_discription_ui: z.string().describe("A visual discription of the webpage UI with what all are you seeing including the placeholders on input , buttons , links , dropdowns , images , paragraphs , headings , etc"),
     }),
   });
 
