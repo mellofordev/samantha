@@ -14,7 +14,9 @@ import { knowledge_graph, operator, operator_completed } from "@/lib/schema/func
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Inter } from 'next/font/google';
 import WeatherCard, { WeatherData } from "./animata/widget/weather-card";
-import { Instrument_Serif } from "next/font/google";
+import { Folder, FolderItem } from "./ui/folder";
+import { Book, Clock, Globe, Image, Video, User, CreditCard, Users, Settings, LogOut, Plus, Trash, Edit } from "lucide-react";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator, ContextMenuLabel, ContextMenuShortcut } from "./ui/context-menu";
 
 const inter = Inter({ 
   weight: '700',
@@ -113,18 +115,51 @@ export function AppSidebar() {
       </SidebarHeader>
       <hr className="border-white/10 border-dashed" />
       <SidebarContent>
-        {videoStream && (
-          <div className="space-y-4 p-4">
-            <div className="aspect-video relative overflow-hidden rounded-xl  bg-black/20 backdrop-blur-[24px] border border-[rgba(179,177,177,0.32)] border-solid">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover"
-              />
+        <ContextMenu>
+          <ContextMenuTrigger className="flex flex-col w-full h-full">
+            {videoStream && (
+              <div className="space-y-4 p-4">
+                <div className="aspect-video relative overflow-hidden rounded-xl  bg-black/20 backdrop-blur-[24px] border border-[rgba(179,177,177,0.32)] border-solid">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
+            <div className="p-3 space-y-3">
+              <Folder 
+                title="History" 
+                defaultOpen={true}
+              >
+                <FolderItem 
+                  icon={<Book className="h-4 w-4" />}
+                  label="History" 
+                  href="#" 
+                />
+              </Folder>
             </div>
-          </div>
-        )}
+          </ContextMenuTrigger>
+          <ContextMenuContent className="w-60 h-full">
+            <ContextMenuLabel>Folder</ContextMenuLabel>
+            
+            <ContextMenuItem className="rounded-md hover:bg-[rgba(75,75,75,0.7)] focus:bg-[rgba(75,75,75,0.7)] transition-colors">
+              <Plus className="mr-2 h-4 w-4" />
+              New Folder
+            </ContextMenuItem>
+            <ContextMenuItem className="rounded-md hover:bg-[rgba(75,75,75,0.7)] focus:bg-[rgba(75,75,75,0.7)] transition-colors">
+              <Edit className="mr-2 h-4 w-4" />
+              Rename
+            </ContextMenuItem>
+            <ContextMenuItem className="rounded-md hover:bg-[rgba(75,75,75,0.7)] focus:bg-[rgba(75,75,75,0.7)] transition-colors text-red-400">
+              <Trash className="mr-2 h-4 w-4" />
+              Delete
+              <ContextMenuShortcut>⌘⌫</ContextMenuShortcut>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       </SidebarContent>
       <SidebarGroup className="p-6">
         <WeatherCard 

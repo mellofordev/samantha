@@ -69,7 +69,7 @@ module.exports = {
   		keyframes: {
   			'accordion-down': {
   				from: {
-  					height: 0
+  					height: '0'
   				},
   				to: {
   					height: 'var(--radix-accordion-content-height)'
@@ -80,17 +80,29 @@ module.exports = {
   					height: 'var(--radix-accordion-content-height)'
   				},
   				to: {
-  					height: 0
+  					height: '0'
   				}
-  			}
+  			},
+  			'shimmer': {
+  				'0%': { backgroundPosition: '200% 0' },
+  				'100%': { backgroundPosition: '-200% 0' },
+  			},
+  			'pulse-glow': {
+  				'0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
+  				'50%': { opacity: 1, transform: 'scale(1.03)' },
+  			},
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'shimmer': 'shimmer 2s infinite',
+  			'pulse-glow': 'pulse-glow 3s infinite',
   		},
   		fontFamily: {
-  			'instrument-serif': ['var(--font-instrument-serif)'],
-  		},
+  			'instrument-serif': [
+  				'var(--font-instrument-serif)'
+  			]
+  		}
   	}
   },
   plugins: [require("tailwindcss-animate")],

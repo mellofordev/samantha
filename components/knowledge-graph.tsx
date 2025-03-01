@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { X } from "lucide-react"
+import { WrigleDivider } from "@/components/ui/wrigle-divider"
 export function KnowledgeGraphBento({
   title,
   description,
@@ -17,7 +18,7 @@ export function KnowledgeGraphBento({
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
 
   return (
-    <div className="w-full mx-auto p-4 space-y-6 relative bg-white">
+    <div className="w-full mx-auto p-4 pb-16 space-y-6 relative bg-white">
       {/* Hero Section */}
       <Card className="bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md border border-white/40">
         <CardHeader className="pb-2">
@@ -25,12 +26,7 @@ export function KnowledgeGraphBento({
             {title}
           </CardTitle>
           <div className="flex justify-center my-4">
-            <svg width="100" height="12" className="text-gray-200">
-              <pattern id="wave" x="0" y="0" width="20" height="12" patternUnits="userSpaceOnUse">
-                <path d="M0 6 Q 5 0, 10 6 Q 15 12, 20 6" fill="none" stroke="currentColor" strokeWidth="2"/>
-              </pattern>
-              <rect width="100" height="12" fill="url(#wave)"/>
-            </svg>
+            <WrigleDivider />
           </div>
           <CardDescription className="text-gray-600 text-center">{description}</CardDescription>
         </CardHeader>
@@ -142,11 +138,11 @@ export function KnowledgeGraphBento({
           <div className="flex flex-col gap-5 relative">
           <DialogTitle className="text-black/90 absolute top-4 left-4 z-10">
             </DialogTitle>
-            <div className="mt-8">
+            <div className="p-6 mt-8">
               <img 
                 src={selectedImage || "/placeholder.svg"} 
                 alt="Preview"
-                className="w-full h-auto object-contain rounded-lg"
+                className="w-full h-auto object-cover rounded-lg"
               />
             </div>
           </div>

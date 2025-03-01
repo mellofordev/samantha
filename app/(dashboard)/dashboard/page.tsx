@@ -9,12 +9,14 @@ import {
   operator,
   operator_completed,
 } from "@/lib/schema/function-call";
-import { generateUI, agent, generateKnowledgeGraph } from "@/app/actions";
+import { generateUI, agent, generateKnowledgeGraph } from "@/app/actions/ai-agent";
 import Welcome from "@/components/welcome";
 import { automationStore } from "@/lib/store/automation-store";
 import { KnowledgeGraphBento } from "@/components/knowledge-graph";
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph";
 import { SpotlightSearch } from "@/components/spotlight-search";
+import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 const EXTENSION_ID = "kedicgkkepbajabaahchaahppidgjica";
 export const maxDuration = 30;
@@ -23,6 +25,37 @@ export default function Home() {
   const [generatedObject, setGeneratedObject] = useState<KnowledgeGraphData | null>(null);
   const [isFirstTask, setIsFirstTask] = useState(true);
   const [screenshot, setScreenshot] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Add loading progress animation
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isLoading) {
+      // Reset progress when loading starts
+      setLoadingProgress(0);
+      
+      // Simulate progress increasing to 90% during loading
+      interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + (90 - prev) * 0.1;
+        });
+      }, 300);
+    } else {
+      // Complete the progress when loading finishes
+      setLoadingProgress(100);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isLoading]);
+
   useEffect(() => {
     const onToolCall = (toolCall: ToolCall) => {
       console.log(`got toolcall`, toolCall);
@@ -31,22 +64,28 @@ export default function Home() {
         toolCall.functionCalls.forEach(async (fc: any) => {
           if (fc.name === knowledge_graph.name) {
             console.log("Knowledge Graph Call:", fc.args.knowledge_graph);
-            const response = await generateKnowledgeGraph(fc.args.knowledge_graph);
-            setGeneratedObject(response as KnowledgeGraphData);
-            client.sendToolResponse({
-              functionResponses: [
-                {
-                  response: {
-                    output: {
-                      success: true,
-                      ui_generated: true,
-                      tell_user: response.description,
+            setIsLoading(true);
+            try {
+              const response = await generateKnowledgeGraph(fc.args.knowledge_graph);
+              setGeneratedObject(response as KnowledgeGraphData);
+              client.sendToolResponse({
+                functionResponses: [
+                  {
+                    response: {
+                      output: {
+                        success: true,
+                        ui_generated: true,
+                        tell_user: response.description,
+                      },
                     },
+                    id: fc.id,
                   },
-                  id: fc.id,
-                },
-              ],
-            });
+                ],
+              });
+            } finally {
+              // Delay setting isLoading to false to allow progress animation to complete
+              setTimeout(() => setIsLoading(false), 100);
+            }
           }
           if (fc.name === operator.name) {
             const storedState = automationStore.getState();
@@ -334,9 +373,15 @@ export default function Home() {
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
       <SpotlightSearch />
       <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
-        <div className="min-h-full ml-64 rounded-3xl  overflow-auto relative z-10  bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid ">
+        <div className="min-h-full ml-64 rounded-3xl overflow-auto relative z-10 bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid">
+          {(loadingProgress > 0 && isLoading) && (
+            <Progress 
+              value={loadingProgress} 
+              className="relative overflow-hidden before:absolute before:inset-0 before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent"
+            />
+          )}
           {screenshot && <img src={screenshot} alt="screenshot" className="w-full h-full object-cover" />}
-          {!screenshot && generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
+          {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
         </div>
       </main>
     </div>
