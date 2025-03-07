@@ -5,6 +5,7 @@ import { createGoogleGenerativeAI} from "@ai-sdk/google";
 import { groq } from "@ai-sdk/groq";
 import {z } from "zod";
 import { JSDOM } from 'jsdom';
+import { modifySearchPrompt } from "./user-context-gen";
 
 interface SearchResult {
   title: string;
@@ -329,137 +330,13 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
 
   return response.object;
 }
-export async function generateUI(prompt: string) {
-  const result = await streamUI({
-    model: perform_agent("gemini-2.0-flash"),
-    prompt: `<query_analysis>
-  <user_input>${prompt}</user_input>
-  <objective>Process query for knowledge graph generation</objective>
-</query_analysis>`,
-
-    system: `
-<assistant_role>
-You are an AI assistant specialized in providing informational responses through knowledge graphs.
-</assistant_role>
-
-<primary_functions>
-1. Knowledge Graph Queries:
-   - Handle informational and educational queries
-   - Provide facts and explanations about topics
-   - Show relationships between concepts
-   - Display multimedia content and search results
-
-2. Query Analysis:
-   - Process query to extract key concepts and relationships
-   - Identify relevant facts and information to include
-   - Structure information in an educational and engaging way
-</primary_functions>
-
-<response_instruction>
-For information queries like "tell me about Einstein" or "latest news on AI", generate a comprehensive knowledge graph with relevant facts, relationships and multimedia content.
-</response_instruction>`,
-
-    text: ({ content }) => <p>{content}</p>,
-    maxRetries: 3,
-    tools: {
-      generateKnowledgeGraph: {
-        description:
-          "Creates a rich, interactive knowledge visualization with multimedia elements and structured information about the search query.",
-        parameters: z.object({
-          title: z.string().describe("The main search query or topic title"),
-          description: z
-            .string()
-            .describe(
-              "A comprehensive overview of the topic with key points and context (2-3 sentences)"
-            ),
-          relatedTopics: z
-            .array(
-              z.object({
-                title: z
-                  .string()
-                  .describe("Name of the related concept or subtopic"),
-                description: z
-                  .string()
-                  .describe(
-                    "Explanation of how this topic connects to the main subject and its significance"
-                  ),
-              })
-            )
-            .describe(
-              "Connected concepts and subtopics that provide broader context"
-            ),
-          facts: z
-            .array(
-              z.object({
-                title: z.string().describe("Concise fact title or category"),
-                content: z
-                  .string()
-                  .describe(
-                    "Detailed explanation of the fact with supporting information"
-                  ),
-              })
-            )
-            .describe(
-              "Key facts, statistics, and important details about the topic"
-            ),
-        }),
-        generate: async function* (data) {
-          yield (
-            <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden bg-white">
-            <div 
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url('/cloud_bg.png')`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url("/noise.png")`,
-              }}
-            />
-            <div className="text-center relative z-10 mb-12">
-              <h1 className={`text-4xl font-instrument-serif mb-2 text-gray-800`}>
-                Generating UI
-              </h1>
-            </div>
-          </div>
-          );
-          const searchResults = await getSearchResults(data.title);
-          const videoResult = await fetchYouTubeVideo(data.title);
-          try {
-            const knowledgeGraphData = {
-              title: data.title,
-              description: data.description,
-              imageUrl: searchResults.images[0] || "/placeholder.svg",
-              relatedTopics: data.relatedTopics.map((topic, index) => ({
-                ...topic,
-                imageUrl: searchResults.images[index + 1] || "/placeholder.svg",
-              })),
-              videoResult: videoResult,
-              imageGallery: searchResults.images || ["/placeholder.svg"],
-              facts: data.facts,
-            };
-
-            return <div></div>;
-          } catch (error) {
-            console.error("Error generating knowledge graph:", error);
-            throw error;
-          }
-        },
-      },
-    },
-  });
-  return result.value;
-}
-export async function generateKnowledgeGraph(prompt: string) {
-    const searchResults = await getSearchResults(prompt);
+export async function generateWebSearch(prompt: string) {
+    const  modifyPrompt = await modifySearchPrompt(prompt);
+    const searchResults = await getSearchResults(modifyPrompt);
     const response = await generateObject({
       model: perform_agent("gemini-2.0-flash"),
       prompt: `<query_analysis>
-      <user_input>${prompt}</user_input>
+      <user_input>${modifyPrompt}</user_input>
       <objective>Process query for knowledge graph generation</objective>
     </query_analysis>
       <search_results>
@@ -490,7 +367,7 @@ export async function generateKnowledgeGraph(prompt: string) {
       </response_instruction>`,
 
       maxRetries: 3,
-      schemaName: "knowledge_graph",
+      schemaName: "web_search",
       schema: z.object({
         title: z.string().describe("The main search query or topic title"),
         description: z
@@ -529,7 +406,8 @@ export async function generateKnowledgeGraph(prompt: string) {
           .describe(
             "Key insights, statistics, and important details about the topic"
           ),
-        })
+        }),
+      
     });
     const videoResult = await fetchYouTubeVideo(response.object.title);
     try {
@@ -546,7 +424,6 @@ export async function generateKnowledgeGraph(prompt: string) {
         quick_insights: response.object.quick_insights,
         search_results: searchResults.results,
       };
-
       return knowledgeGraphData;
     } catch (error) {
       console.error("Error generating knowledge graph:", error);

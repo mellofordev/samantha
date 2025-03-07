@@ -1,5 +1,6 @@
 import { FunctionDeclaration, SchemaType } from "@google/generative-ai";
-import { knowledge_graph_description } from "../prompt_helpers/knowledge-graph";
+import { web_search_description } from "../prompt_helpers/web-search";
+
 export const declaration: FunctionDeclaration = {
   name: "model_response",
   description: "The response of the model in text format",
@@ -14,21 +15,22 @@ export const declaration: FunctionDeclaration = {
     required: ["response"],
   },
 };
-export const knowledge_graph: FunctionDeclaration = {
-  name: "knowledge_graph",
-  description:
-    "Generate a knowledge graph for the user's query which consist of the title , description , image , related topics , video , image gallery , facts",
+
+export const web_search: FunctionDeclaration = {
+  name: "web_search",
+  description: "Perform a web search and display the results in a knowledge graph format",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      knowledge_graph: {
+      web_search: {
         type: SchemaType.STRING,
-        description: knowledge_graph_description,
+        description: web_search_description,
       },
     },
-    required: ["knowledge_graph"],
+    required: ["web_search"],
   },
 };
+
 export const chat_history: FunctionDeclaration = {
   name: "chat_history", 
   description: "The chat history of the user with the Assistant",
@@ -110,5 +112,73 @@ export const operator_completed: FunctionDeclaration = {
       },
     },
     required: ["is_task_finished"],
+  },
+};
+
+export const conversation: FunctionDeclaration = {
+  name: "conversation",
+  description: "transcribtion of what the user or the assistant said",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      messages: {
+        type: SchemaType.ARRAY,
+        description: "The chat history of the user with the Assistant",
+        items: {
+          type: SchemaType.OBJECT,
+          properties: {
+            role: {
+              type: SchemaType.STRING,
+              description: "The role of who sent the message , ai or user",
+            },
+            message: {
+              type: SchemaType.STRING,
+              description: "The message text",
+            },
+          },
+          required: ["role", "message"],
+        },
+      },
+    },
+  },
+};
+
+export const add_folder: FunctionDeclaration = {
+  name: "add_folder",
+  description: "Create a folder to save search results and URLs for future reference",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      folder_name: {
+        type: SchemaType.STRING,
+        description: "Name of the folder to create",
+      },
+      file_content:{
+        type:SchemaType.ARRAY,
+        description: "The content of the folder",
+        items:{
+          type:SchemaType.OBJECT,
+          properties:{
+            title:{
+              type:SchemaType.STRING,
+              description: "The title of the content",
+            },
+            url:{
+              type:SchemaType.STRING,
+              description: "The url of the content",
+            },
+            content:{
+              type:SchemaType.STRING,
+              description: "The content of the content",
+            }
+          }
+        }
+      },
+      description: {
+        type: SchemaType.STRING,
+        description: "Brief description of what this folder contains",
+      }
+    },
+    required: ["folder_name"],
   },
 };

@@ -5,7 +5,7 @@ import { CommandIcon, Search } from "lucide-react"
 import { Button } from "./ui/button"
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext"
 export function SpotlightSearch() {
-  const { client } = useLiveAPIContext()
+  const { client,connect,connected } = useLiveAPIContext()
   const [open, setOpen] = useState(false)
   const [input,setInput] = useState("");
   useEffect(() => {
@@ -25,8 +25,11 @@ export function SpotlightSearch() {
   const handleSearch = () => {
     if (!input.trim()) return; // Don't send empty searches
     console.log(input)
+    if(connected===false){
+      connect()
+    }
     client.send({
-        text: `user search ${input} \n use web search to find more information`
+        text: `user search ${input} \n call web search tool`
     })
     setInput("") // Clear input after search
     setOpen(false) // Close dialog after search

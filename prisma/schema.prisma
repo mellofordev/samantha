@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(cuid())
+  clerk_reference_id String         @unique
+  email             String         @unique
+  name              String?
+  location          String?
+  conversations     Conversation[]
+  userPreferencePrompt String? // Supplied to the model to curate better tool and widgets
+  searchHistory     SearchHistory[]
+  folders           Folder[]
+}
+
+model Conversation {
+  id                String   @id @default(cuid())
+  clerk_reference_id String
+  user              User     @relation(fields: [clerk_reference_id], references: [clerk_reference_id])
+  createdAt         DateTime @default(now())
+  role              String 
+  message           String
+}
+
+model SearchHistory {
+  id                String   @id @default(cuid())
+  clerk_reference_id String
+  user              User     @relation(fields: [clerk_reference_id], references: [clerk_reference_id])
+  createdAt         DateTime @default(now())
+  query             String
+  result            String
+}
+
+model Folder{
+  id                String   @id @default(cuid())
+  clerk_reference_id String
+  user              User     @relation(fields: [clerk_reference_id], references: [clerk_reference_id])
+  createdAt         DateTime @default(now())
+  folder_name       String
+  files             File[]
+}
+model File{
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  file_name         String
+  file_type         String   @default("url") // Can be "url" or "knowledge_graph"
+  json_content      String
+  folder            Folder   @relation(fields: [folder_id], references: [id])
+  folder_id         String
+}
+

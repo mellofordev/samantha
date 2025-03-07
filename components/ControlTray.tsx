@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 
+
 export type ControlTrayProps = {
   videoRef: RefObject<HTMLVideoElement | null>;
   children?: ReactNode;
@@ -72,11 +73,19 @@ function ControlTray({
 
   const { client, connected, connect, disconnect, volume } =
     useLiveAPIContext();
-  useEffect(() => {
-    if (!connected && connectButtonRef.current) {
-      connectButtonRef.current.focus();
-    }
-  }, [connected]);
+  // paused this due to the rate limit of the api 
+  // useEffect(() => {
+  //   if(!connected && connectButtonRef.current){
+  //     connect();
+  //   }
+  // }, [connect]);
+  // useEffect(() => {
+  //   if(connected){
+  //     client.send({
+  //       text: `Start the conversation with the user , you should be polite and friendly and sound like a calm girlfriend`
+  //     })
+  //   }
+  // }, [connected]);
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--volume",
@@ -85,13 +94,15 @@ function ControlTray({
   }, [inVolume]);
 
   useEffect(() => {
-    const onData = (base64: string) => {
+    const onData = async (base64: string) => {
       client.sendRealtimeInput([
         {
           mimeType: "audio/pcm;rate=16000",
           data: base64,
         },
       ]);
+    
+
     };
     if (connected && !muted && audioRecorder) {
       audioRecorder.on("data", onData).on("volume", setInVolume).start();

@@ -1,11 +1,12 @@
 import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
-import { createClient } from '@/lib/supabase/client'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET
-  const supabase = createClient()
   if (!SIGNING_SECRET) {
     throw new Error('Error: Please add SIGNING_SECRET from Clerk Dashboard to .env or .env.local')
   }
@@ -46,23 +47,29 @@ export async function POST(req: Request) {
     })
   }
 
-  // Do something with payload
-  // For this guide, log payload to console
-  const { id } = evt.data
-  const eventType = evt.type
 
-  if (evt.type === 'user.created') {
-    console.log('userId:', evt.data.id,evt.data.email_addresses[0].email_address,evt.data.first_name)
-    const { data, error } = await supabase.from('users').insert({
-      user_id: evt.data.id,
-      email: evt.data.email_addresses[0].email_address,
-      name: evt.data.first_name
+  switch (evt.type) {
+    case 'user.created':
+      console.log('userId:', evt.data.id,evt.data.email_addresses[0].email_address,evt.data.first_name)
+      await prisma.user.create({
+      data: {
+        clerk_reference_id: evt.data.id,
+        email: evt.data.email_addresses[0].email_address,
+        name: evt.data.first_name
+      }
+      })
+      break
+    case 'user.updated':
+      await prisma.user.update({
+        where: { clerk_reference_id: evt.data.id },
+      data: { name: evt.data.first_name }
     })
-    if (error) {
-      console.error('Error:', error)
-    } else {
-      console.log('User created:', data)
-    }
+      break
+    case 'user.deleted':
+      await prisma.user.delete({
+        where: { clerk_reference_id: evt.data.id }
+      })
+      break
   }
 
   return new Response('Webhook received', { status: 200 })

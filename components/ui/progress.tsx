@@ -21,12 +21,12 @@ const Progress = React.forwardRef<
   >
     <ProgressPrimitive.Indicator
       className={cn(
-        "h-full w-full flex-1 transition-all",
+        "h-full w-full flex-1",
         isLoading 
-          ? "animate-shimmer bg-gradient-to-r from-transparent via-white to-transparent bg-[length:50%_100%]" 
-          : "bg-[rgba(144,238,144,0.7)]"
+          ? "animate-shimmer bg-gradient-to-r from-transparent via-white/30 to-transparent bg-[length:200%_100%]" 
+          : "transition-all bg-[rgba(144,238,144,0.7)]"
       )}
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      style={{ transform: isLoading ? "translateX(0%)" : `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>
 ))

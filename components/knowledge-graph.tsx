@@ -2,8 +2,7 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { X } from "lucide-react"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { WrigleDivider } from "@/components/ui/wrigle-divider"
 export function KnowledgeGraphBento({
   title,
@@ -77,7 +76,50 @@ export function KnowledgeGraphBento({
           </div>
         </CardContent>
       </Card>
-
+      {/* Search Results Section */}
+      <div className="mt-8 relative">
+        <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide">
+          {search_results?.map((result, index) => (
+            <div key={index} className="flex-none w-80 relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-200"></div>
+              <div className="relative bg-white overflow-hidden">
+                <div className="p-4 border-8 border-gray-200 rounded-md">
+                  <a 
+                    href={result.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-blue-600 font-medium hover:underline line-clamp-2 pr-2">{result.title}</h3>
+                      <div className="w-6 h-6 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs font-bold text-gray-600">{index + 1}</div>
+                    </div>
+                    <p className="text-green-700 text-sm mb-2 truncate">{result.url}</p>
+                    <div className="h-24 overflow-hidden">
+                      <p className="text-sm text-gray-600">{result.content}</p>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-dashed border-gray-200 flex justify-between items-center">
+                      <span className="text-xs text-gray-500">Search Result</span>
+                      <span className="text-xs font-medium text-blue-500 hover:underline">View</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {(!search_results || search_results.length === 0) && (
+            <div className="flex-none w-80 relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl blur opacity-25"></div>
+              <div className="relative bg-white overflow-hidden" >
+                <div className="p-8 border-8 border-gray-200 rounded-md flex items-center justify-center" >
+                  <p className="text-gray-500 text-center">No search results available</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       {/* Video Section */}
       <div className="mt-6 relative">
         <div className="flex overflow-x-auto pb-4 space-x-4 scrollbar-hide">
