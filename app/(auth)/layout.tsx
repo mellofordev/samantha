@@ -9,8 +9,8 @@ const instrumentSerif = Instrument_Serif({
   variable: '--font-instrument-serif'
 });
 export const metadata: Metadata = {
-  title: 'Samantha',
-  description: 'A teacher that dont judge you!',
+  title: 'samantha',
+  description: 'her',
 }
 export default function RootLayout({
   children,

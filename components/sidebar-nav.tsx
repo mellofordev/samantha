@@ -23,7 +23,7 @@ import { generateWebSearch } from "@/app/actions/ai-agent";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import Image from "next/image";
 const inter = Inter({ 
   weight: '700',
   subsets: ['latin'],
@@ -317,9 +317,7 @@ export function AppSidebar() {
     <Sidebar className="dark text-white border-r border-white/10 border-dashed">
       <SidebarHeader className="flex flex-row justify-between items-center p-4 m-2">
         <div className="flex items-center gap-2">
-          <h1 className={`font-instrument-serif text-xl font-bold text-white `}>
-            AutoCompute
-          </h1>
+          <Image src="/logo.svg" alt="AutoCompute" width={32} height={32} draggable={false} />
         </div>
         <UserButton  />
       </SidebarHeader>
@@ -426,9 +424,6 @@ export function AppSidebar() {
                 </ContextMenu>
               ))}
               
-              {folders.length === 0 && (
-                <div className="text-sm text-gray-400 p-2 mt-2">No folders yet. Ask me to create a folder from search results.</div>
-              )}
             </div>
           </ContextMenuTrigger>
           <ContextMenuContent className="w-60 h-full">

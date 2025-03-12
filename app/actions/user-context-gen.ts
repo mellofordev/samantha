@@ -3,7 +3,7 @@
 import { createGroq } from "@ai-sdk/groq";
 import { generateObject, LanguageModelV1 } from "ai";
 import { z } from "zod";
-import { getSearchHistory, getUserLocation, saveUserPreference } from "./backend";
+import { getSearchHistory, getUserLocation, getUserPreference, saveUserPreference } from "./backend";
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -44,19 +44,19 @@ Previous search history: ${searchHistoryText}.`,
 export async function modifySearchPrompt(prompt: string) {
   try {
     // Get user preferences and location
-    const preferences = await generateUserPreference(prompt) || "";
+    const preferences = await getUserPreference() || "";
     const userLocation = await getUserLocation() || { location: "Unknown" };
-    const location = typeof userLocation === 'object' && userLocation.location ? userLocation.location : "Unknown";
+    console.log("userLocation", userLocation);
+  
     
-    // If prompt is empty or too short, return it as is
-    if (!prompt || prompt.length < 3) return prompt;
-    
+
+  
     const context = await generateObject({
       model: groq("llama-3.1-8b-instant") as LanguageModelV1,
       prompt: `Original search: "${prompt}"`,
       system: `You are an AI assistant that enhances search queries.
 User preferences: ${preferences}
-User location: ${location}
+User location: ${userLocation}
 
 Your task is to modify the original search query to make it more specific and relevant.
 If the search is location-related, include the user's location.

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
+import Image from "next/image";
 export default function Page() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#181818]">
@@ -27,8 +28,9 @@ export default function Page() {
       <div className="relative z-10 h-full flex flex-col">
         {/* Navigation Bar */}
         <nav className="w-full px-4 sm:px-8 h-16 flex items-center justify-between border-b border-dashed border-white/10">
-          <div className="font-instrument-serif text-xl sm:text-2xl text-white">
-            AutoCompute
+          <div className="font-instrument-serif text-xl sm:text-2xl text-white flex items-center gap-2">
+            <Image src="/logo.svg" alt="AutoCompute" width={32} height={32} draggable={false} />
+            <span className="text-white">samantha</span>
           </div>
           <div className="hidden md:flex space-x-8">
             <a
@@ -75,7 +77,7 @@ export default function Page() {
               <h1 className="text-4xl sm:text-6xl font-bold text-white tracking-tight mt-10">
                 Meet
                 <span className="font-instrument-serif font-normal">
-                  {" "}AutoCompute
+                  {" "}samantha
                 </span>
               </h1>
               <p className="mt-2 sm:mt-4 text-base sm:text-lg text-white/90">
@@ -89,7 +91,7 @@ export default function Page() {
                 </SignedOut>
                 <SignedIn>
                   <Link href="/dashboard" className="w-full sm:w-auto">
-                    <Button variant={"default"} className="w-full sm:w-auto h-12 sm:h-14 rounded-lg">Go to Dashboard</Button>
+                    <Button variant={"default"} className="w-full sm:w-auto rounded-lg">Go to Dashboard</Button>
                   </Link>
                 </SignedIn>
                 <HeroVideoDialog 
