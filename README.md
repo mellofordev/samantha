@@ -1,7 +1,7 @@
-# Samantha
 
 <p align="center">
   <img src="public/logo.svg" alt="Samantha Logo">
+  samantha
 </p>
 
 <p align="center">
