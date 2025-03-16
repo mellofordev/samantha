@@ -10,7 +10,7 @@ import { useRef, useState, useEffect } from "react";
 import ControlTray from "@/components/ControlTray";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { prompt } from "@/lib/prompt_helpers/prompt";
-import { web_search, operator, operator_completed, conversation, add_folder } from "@/lib/schema/function-call";
+import { web_search, conversation, add_folder } from "@/lib/schema/function-call";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Inter } from 'next/font/google';
 import WeatherCard, { WeatherData } from "./animata/widget/weather-card";
@@ -135,7 +135,7 @@ export function AppSidebar() {
         ],
       },
       tools: [
-        { functionDeclarations: [web_search, operator, operator_completed, conversation, add_folder] },
+        { functionDeclarations: [web_search, conversation, add_folder] },
       ],
     });
   }, [setConfig, user, weather, location]);

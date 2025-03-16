@@ -1,9 +1,9 @@
 import { useUser } from "@clerk/nextjs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import BentoGrid from "@/components/animata/bento-grid/gradient";
-import { ArrowLeft, ArrowRight, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, BugIcon, Info } from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { WrigleDivider } from "./ui/wrigle-divider";
@@ -32,6 +32,7 @@ export default function Welcome() {
   const currentHour = new Date().getHours();
   const isNightOrEvening = currentHour >= 17 || currentHour < 6;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAlphaDialogOpen, setIsAlphaDialogOpen] = useState(false);
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
 
   const nextFeature = () => {
@@ -61,8 +62,15 @@ export default function Welcome() {
         }}
       />
       
-      {/* New Updates button */}
-      <div className="absolute top-4 right-4 z-20">
+      {/* Buttons in top right */}
+      <div className="absolute top-4 right-4 z-20 flex space-x-2">
+        <Button 
+          className="rounded-3xl"
+          onClick={() => setIsAlphaDialogOpen(true)}
+        >
+          <BugIcon className="h-4 w-4" />
+          report bug
+        </Button>
         <Button 
           onClick={() => setIsDialogOpen(true)}
           className="rounded-3xl"
@@ -138,6 +146,40 @@ export default function Welcome() {
               >
                 <ArrowRight className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Alpha Version Dialog */}
+      <Dialog open={isAlphaDialogOpen} onOpenChange={setIsAlphaDialogOpen}>
+        <DialogContent className="p-6 md:p-8 text-white max-h-[85vh] overflow-hidden">
+          <DialogHeader className="mb-4">
+            <div className="flex flex-col items-center">
+              <DialogTitle className="text-center text-2xl font-light font-instrument-serif">samantha v0.1.0-alpha</DialogTitle>
+              <WrigleDivider />
+            </div>
+          </DialogHeader>
+          
+          <div className="relative overflow-hidden py-4 px-6 md:px-8">
+            <div className="text-center space-y-6">
+              <p className="text-gray-400 text-lg max-w-md mx-auto">
+                You are currently using Samantha Alpha v0.1.0. This is an early release version with limited functionality.
+              </p>
+              
+              <div className="space-y-4">
+                <p className="text-gray-400">
+                  For reporting issues or providing feedback, please visit:
+                </p>
+                <a 
+                  href="https://github.com/mellofordev/samantha/issues" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray hover:underline block"
+                >
+                  https://github.com/mellofordev/samantha/issues
+                </a>
+              </div>
             </div>
           </div>
         </DialogContent>
