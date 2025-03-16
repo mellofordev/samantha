@@ -25,6 +25,25 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "samantha",
   description: "her",
+  openGraph: {
+    title: "samantha",
+    description: "her",
+    images: [
+      {
+        url: "/opengraph.jpg",
+        width: 1200,
+        height: 630,
+        alt: "samantha",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "samantha",
+    description: "her",
+    images: ["/opengraph.jpg"],
+  },
 };
 
 export default function RootLayout({
