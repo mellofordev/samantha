@@ -1,7 +1,7 @@
-<h1 align="center">
-  <img src="public/logo.svg" alt="Samantha Logo" height="60" style="vertical-align: middle;">
-  samantha
-</h1>
+<p align="center">
+  <img src="public/logo.svg" alt="Samantha Logo" height="80">
+</p>
+<h1 align="center">samantha</h1>
 
 <p align="center">
   <img src="public/screenshot.png" alt="Samantha Screenshot" width="800">
