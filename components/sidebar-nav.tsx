@@ -18,7 +18,6 @@ import { Folder, FolderItem } from "./ui/folder";
 import { Book, Sparkle, FolderIcon, Paintbrush, Search, Clock, Trash, Edit, MoreVertical } from "lucide-react";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "./ui/context-menu";
 import { getUserPreference, saveUserLocation, getSearchHistory, getFolders, deleteFolder, renameFolder } from "@/app/actions/backend";
-import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph";
 import { generateWebSearch } from "@/app/actions/ai-agent";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -136,7 +135,6 @@ export function AppSidebar() {
         ],
       },
       tools: [
-        { googleSearch: {} },
         { functionDeclarations: [web_search, operator, operator_completed, conversation, add_folder] },
       ],
     });

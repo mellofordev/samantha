@@ -8,7 +8,8 @@ import {
   web_search,
   operator,
   operator_completed,
-  add_folder
+  add_folder,
+  conversation
 } from "@/lib/schema/function-call";
 import {
   agent,
@@ -21,6 +22,7 @@ import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph";
 import { SpotlightSearch } from "@/components/spotlight-search";
 import { Progress } from "@/components/ui/progress";
 import { saveSearchHistory, createFolder } from "@/app/actions/backend";
+import { functionRouter } from "@/app/actions/function-router";
 
 
 const EXTENSION_ID = "kedicgkkepbajabaahchaahppidgjica";
@@ -493,7 +495,6 @@ export default function Home() {
         ],
       });
     };
-
     client.on("toolcall", onToolCall);
     return () => {
       client.off("toolcall", onToolCall);
