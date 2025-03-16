@@ -97,7 +97,7 @@ export default function Page() {
                   </Link>
                 </SignedIn>
                 <HeroVideoDialog 
-                  videoSrc="https://www.youtube.com/embed/hqJDKTqCESE" 
+                  videoSrc="https://www.youtube.com/embed/S215EPHRSJI" 
                   thumbnailSrc="https://mediaproxy.salon.com/width/1200/https://media2.salon.com/2013/12/her2.jpg" 
                   className="w-full sm:w-[650px] h-[250px] sm:h-[400px] mt-4"
                 />
