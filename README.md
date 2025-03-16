@@ -4,6 +4,10 @@
   <img src="public/logo.svg" alt="Samantha Logo">
 </p>
 
+<p align="center">
+  <img src="public/screenshot.png" alt="Samantha Screenshot" width="800">
+</p>
+
 Samantha is an intelligent personal assistant inspired by the AI character from the movie "Her". Currently in early development, Samantha aims to provide a natural, intuitive, and helpful AI companion experience.
 
 ## 🌟 Overview
