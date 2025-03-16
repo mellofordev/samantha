@@ -19,7 +19,9 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "samantha",
-    description: "her",
+    description: "an agent that can help you with your life",
+    siteName: "samantha",
+    url: "https://yoursamantha.com",
     images: [
       {
         url: "/opengraph.jpg",
@@ -33,7 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "samantha",
-    description: "her",
+    description: "an agent that can help you with your life",
     images: ["/opengraph.jpg"],
   },
 }
