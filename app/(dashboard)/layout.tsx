@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { LiveAPIProvider } from "@/contexts/LiveAPIContext";
 import { AppSidebar } from "@/components/sidebar-nav";
 import { ClerkProvider } from "@clerk/nextjs";
+import MobileNotice from "@/components/mobile-notice";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,11 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: "samantha",
   description: "her",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
   openGraph: {
     title: "samantha",
     description: "her",
@@ -63,6 +69,7 @@ export default function RootLayout({
         <SidebarProvider>
           <ClerkProvider>
           <LiveAPIProvider url={uri} apiKey={API_KEY}>
+            <MobileNotice />
             <AppSidebar />
             {children}
           </LiveAPIProvider>

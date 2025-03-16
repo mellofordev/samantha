@@ -2,7 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "../globals.css";
 import { Instrument_Serif } from "next/font/google";
 import { Metadata } from "next";
-
+import MobileNotice from "@/components/mobile-notice";
 const instrumentSerif = Instrument_Serif({ 
   weight: ['400'],
   subsets: ['latin'],
@@ -12,6 +12,11 @@ const instrumentSerif = Instrument_Serif({
 export const metadata: Metadata = {
   title: 'samantha',
   description: 'her',
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
   openGraph: {
     title: "samantha",
     description: "her",
@@ -42,6 +47,7 @@ export default function RootLayout({
     <html lang="en" className={`${instrumentSerif.variable}`}>
       <body>
         <ClerkProvider>
+          <MobileNotice />
           {children}
         </ClerkProvider>
       </body>
