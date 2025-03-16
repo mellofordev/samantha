@@ -1,6 +1,8 @@
-# Samantha - Your Personal AI Assistant
+# Samantha
 
-![Samantha Logo](public/logo.svg)
+<p align="center">
+  <img src="public/logo.svg" alt="Samantha Logo">
+</p>
 
 Samantha is an intelligent personal assistant inspired by the AI character from the movie "Her". Currently in early development, Samantha aims to provide a natural, intuitive, and helpful AI companion experience.
 
@@ -206,5 +208,9 @@ This project is licensed under the Apache License 2.0 - see the LICENSE file for
 - All open source libraries used in this project are acknowledged, many of which are under the Apache License
 
 ---
+
+<p align="center">
+  <strong>Samantha</strong>
+</p>
 
 *Note: Samantha is currently in early development. Features and functionality are subject to change.*
