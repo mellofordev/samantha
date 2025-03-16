@@ -33,7 +33,7 @@ Samantha is designed to be more than just a tool - she's an assistant that learn
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/samantha.git
+   git clone https://github.com/mellofordev/samantha.git
    cd samantha
    ```
 
@@ -80,15 +80,16 @@ Samantha is designed to be more than just a tool - she's an assistant that learn
 
 ## 🏗️ Project Structure
 
-- **/app**: Main application code
+- **/app**: Routes
   - **/api**: Backend API endpoints
   - **/(auth)**: Authentication pages and logic
   - **/(dashboard)**: Main application interface
 - **/prisma**: Database schema and migrations
 - **/components**: Reusable UI components
-- **/lib**: Utility functions and shared logic
-- **/contexts**: React context providers
-- **/hooks**: Custom React hooks
+- **/lib**: 
+    - **/prompt_helpers**: Consist of system prompts , tool description
+- **/contexts**: Gemini LiveAPIContext
+- **/hooks**: LiveAPI hooks
 
 ## 🔐 Authentication
 
