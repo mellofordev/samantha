@@ -169,7 +169,7 @@ export default function Welcome() {
               
               <div className="space-y-4">
                 <p className="text-gray-400">
-                  For reporting issues or providing feedback, please visit:
+                  For reporting issues or providing feedback, please email us at:
                 </p>
                 <a 
                   href="mailto:contact@mellohq.in" 
