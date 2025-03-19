@@ -172,12 +172,12 @@ export default function Welcome() {
                   For reporting issues or providing feedback, please visit:
                 </p>
                 <a 
-                  href="https://github.com/mellofordev/samantha/issues" 
+                  href="mailto:contact@mellohq.in" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-gray hover:underline block"
                 >
-                  https://github.com/mellofordev/samantha/issues
+                  contact@mellohq.in
                 </a>
               </div>
             </div>
