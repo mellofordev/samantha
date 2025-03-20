@@ -24,7 +24,6 @@ export function SpotlightSearch() {
 
   const handleSearch = () => {
     if (!input.trim()) return; // Don't send empty searches
-    console.log(input)
     if(connected===false){
       connect()
     }

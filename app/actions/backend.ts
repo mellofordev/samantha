@@ -25,7 +25,6 @@ export async function saveSearchHistory(query: string, result: string) {
                 result
             }
         })
-        console.log("Search history saved:", searchHistory)
         return searchHistory
     } catch (error) {
         console.error("Error saving search history:", error)
@@ -62,7 +61,6 @@ export async function saveUserLocation(location: string) {
         // Get the user from Clerk to access their email
         const user = await currentUser()
         if (!user || !user.emailAddresses || user.emailAddresses.length === 0) {
-            console.error("User email not available")
             return null
         }
         
@@ -82,7 +80,6 @@ export async function saveUserLocation(location: string) {
             }
         })
         
-        console.log("User location saved:", dbUser)
         return dbUser
     } catch (error) {
         // Use a string message instead of potentially null error object
@@ -105,7 +102,6 @@ export async function getUserLocation() {
         })
         
         if (!user) {
-            console.log("User not found")
             return null
         }
         
@@ -132,7 +128,6 @@ export async function getUserPreference() {
         })
         
         if (!user) {
-            console.log("User not found")
             return null
         }
         
@@ -169,7 +164,6 @@ export async function saveUserPreference(prompt: string) {
             }
         })
         
-        console.log("User preference saved:", dbUser)
         return dbUser
     } catch (error) {
         console.error("Error saving user preference:", error)
@@ -209,7 +203,6 @@ export async function createFolder(folderName: string, content: any = null, cont
         // Get the user from Clerk to access their email
         const user = await currentUser();
         if (!user || !user.emailAddresses || user.emailAddresses.length === 0) {
-            console.error("User email not available");
             return null;
         }
         
@@ -221,8 +214,6 @@ export async function createFolder(folderName: string, content: any = null, cont
                 createdAt: new Date()
             }
         });
-        
-        console.log(`Folder created: ${folder.id} - ${folderName}`);
         
         // Handle different content types
         if (content) {
@@ -443,7 +434,6 @@ export async function deleteFolder(folderId: string) {
             }
         });
         
-        console.log(`Folder deleted: ${deletedFolder.id} - ${deletedFolder.folder_name}`);
         return deletedFolder;
     } catch (error) {
         console.error("Error deleting folder:", error instanceof Error ? error.message : "Unknown error");
@@ -468,7 +458,6 @@ export async function renameFolder(folderId: string, newName: string) {
             }
         });
         
-        console.log(`Folder renamed: ${updatedFolder.id} - ${updatedFolder.folder_name}`);
         return updatedFolder;
     } catch (error) {
         console.error("Error renaming folder:", error instanceof Error ? error.message : "Unknown error");

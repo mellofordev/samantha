@@ -103,7 +103,7 @@ export function useLiveAPI({
     };
 
     const onText = async (data: any) => {
-      console.log(data.modelTurn.parts);
+
       
       // Get the new text chunk
       const newText = data.modelTurn.parts[0]?.text || '';
@@ -157,7 +157,6 @@ export function useLiveAPI({
   }, [client]);
 
   const connect = useCallback(async () => {
-    console.log(config);
     if (!config) {
       throw new Error("config has not been set");
     }

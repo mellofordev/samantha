@@ -1,5 +1,3 @@
-
-
 import { create } from "zustand";
 import { StreamingLog } from "@/multimodal-live-types";
 
@@ -44,7 +42,6 @@ export const useLoggerStore = create<StoreLoggerState>((set, get) => ({
   },
 
   clearLogs: () => {
-    console.log("clear log");
     set({ logs: [] });
   },
   setMaxLogs: (n: number) => set({ maxLogs: n }),

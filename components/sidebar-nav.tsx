@@ -208,12 +208,11 @@ export function AppSidebar() {
         return;
       }
       
-      console.log(`Handling click on file: ${file.id} - ${file.file_name} (${file.file_type})`);
+      // Handle click on file
       
       let content;
       try {
         content = JSON.parse(file.json_content);
-        console.log("Parsed file content:", content);
       } catch (parseError) {
         console.error("Error parsing file content:", parseError);
         return;
@@ -221,7 +220,6 @@ export function AppSidebar() {
       
       if (file.file_type === 'url' && content.url) {
         // Open URL in new tab
-        console.log(`Opening URL: ${content.url}`);
         window.open(content.url, '_blank');
       } else if (file.file_type === 'knowledge_graph') {
         // Validate knowledge graph structure
@@ -231,13 +229,12 @@ export function AppSidebar() {
         }
         
         // Dispatch event to render knowledge graph
-        console.log("Rendering knowledge graph from file");
         const event = new CustomEvent('renderKnowledgeGraph', { 
           detail: { data: content } 
         });
         window.dispatchEvent(event);
       } else {
-        console.log(`Unknown file type: ${file.file_type}`);
+        // Unknown file type
       }
     } catch (error) {
       console.error("Error handling file click:", error);
@@ -281,7 +278,6 @@ export function AppSidebar() {
       setIsDeletingFolder(true);
       const result = await deleteFolder(folderId);
       if (result) {
-        console.log(`Folder deleted: ${result.id}`);
         refreshFolders();
       }
     } catch (error) {
@@ -299,7 +295,6 @@ export function AppSidebar() {
       setIsRenamingFolder(true);
       const result = await renameFolder(folderToRename.id, newFolderName);
       if (result) {
-        console.log(`Folder renamed to: ${result.folder_name}`);
         refreshFolders();
         setFolderToRename(null);
         setNewFolderName("");

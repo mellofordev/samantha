@@ -137,10 +137,8 @@ function ControlTray({
         const base64 = canvas.toDataURL("image/jpeg", 1.0);
         const data = base64.slice(base64.indexOf(",") + 1, Infinity);
         client.sendRealtimeInput([{ mimeType: "image/jpeg", data }]);
-        console.log("video data", data);
       }
       if (connected) {
-        console.log("sending video frame");
         timeoutId = window.setTimeout(sendVideoFrame, 1000 / 0.5);
       }
     }

@@ -50,7 +50,6 @@ export async function POST(req: Request) {
 
   switch (evt.type) {
     case 'user.created':
-      console.log('userId:', evt.data.id,evt.data.email_addresses[0].email_address,evt.data.first_name)
       await prisma.user.create({
       data: {
         clerk_reference_id: evt.data.id,
