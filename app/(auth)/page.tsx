@@ -83,7 +83,7 @@ export default function Page() {
                 </span>
               </h1>
               <p className="mt-2 sm:mt-4 text-base sm:text-lg text-white/90">
-                automatically controlling computer 
+                a personal assistant inspired from the movie "Her"
               </p>
               <div className="mt-4 sm:mt-6 flex flex-col items-center justify-center gap-4">
                 <SignedOut>
