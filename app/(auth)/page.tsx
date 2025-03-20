@@ -34,7 +34,7 @@ export default function Page() {
             <Image src="/logo.svg" alt="AutoCompute" width={32} height={32} draggable={false} />
             <span className="text-white">samantha</span>
           </div>
-          <div className="hidden md:flex space-x-8">
+          {/* <div className="hidden md:flex space-x-8">
             <a
               href="#features"
               className="text-sm text-white/90 hover:text-white"
@@ -47,7 +47,7 @@ export default function Page() {
             <a href="#blog" className="text-sm text-white/90 hover:text-white">
               Education
             </a>
-          </div>
+          </div> */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             <SignedOut>
               <a
@@ -62,7 +62,7 @@ export default function Page() {
             </SignedOut>
             <SignedIn>
               <UserButton />
-              <Link href="https://wa.me/918075496634" target="_blank">
+              <Link href="mailto:contact@mellohq.in" target="_blank">
                 <Button variant={'default'} className="text-sm sm:text-base">
                   Contact us
                 </Button>
@@ -97,7 +97,7 @@ export default function Page() {
                   </Link>
                 </SignedIn>
                 <HeroVideoDialog 
-                  videoSrc="https://www.youtube.com/embed/S215EPHRSJI" 
+                  videoSrc="https://www.youtube.com/embed/FwXlGVdX2CM" 
                   thumbnailSrc="https://mediaproxy.salon.com/width/1200/https://media2.salon.com/2013/12/her2.jpg" 
                   className="w-full sm:w-[650px] h-[250px] sm:h-[400px] mt-4"
                 />
