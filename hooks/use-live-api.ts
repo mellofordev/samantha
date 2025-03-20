@@ -4,10 +4,11 @@ import {
   MultimodalLiveAPIClientConnection,
   MultimodalLiveClient,
 } from "@/lib/multimodal-live-client";
-import { LiveConfig } from "@/multimodal-live-types";
+import { LiveConfig, ServerContent, isModelTurn } from "@/multimodal-live-types";
 import { AudioStreamer } from "@/lib/audio-streamer";
 import { audioContext } from "@/lib/utils";
 import VolMeterWorket from "@/lib/worklets/vol-meter";
+import { openaiPlayAudio } from '@/app/actions/play-audio';
 
 export type UseLiveAPIResults = {
   client: MultimodalLiveClient;
@@ -57,20 +58,85 @@ export function useLiveAPI({
     };
 
     const stopAudioStreamer = () => audioStreamerRef.current?.stop();
+    
+    // Add text buffer to accumulate chunks of text
+    let textBuffer = '';
+    let bufferTimer: NodeJS.Timeout | null = null;
+    let isCurrentlySpeaking = false; // Track if audio is currently being played
+    
+    const processBuffer = async () => {
+      if (textBuffer.trim() && !isCurrentlySpeaking) {
+        isCurrentlySpeaking = true;
+        const textToSpeak = textBuffer;
+        textBuffer = ''; // Clear buffer before playing to avoid duplicating text
+        
+        try {
+          const response = await openaiPlayAudio(textToSpeak);
+          console.log(response);
+        } catch (error) {
+          console.error("Error playing audio:", error);
+        } finally {
+          isCurrentlySpeaking = false;
+          
+          // If more text accumulated during speech, process it after a short delay
+          if (textBuffer.trim()) {
+            setTimeout(processBuffer, 100);
+          }
+        }
+      }
+    };
 
+    const onText = async (data: any) => {
+      console.log(data.modelTurn.parts);
+      
+      // Get the new text chunk
+      const newText = data.modelTurn.parts[0]?.text || '';
+      
+      // Add to buffer
+      textBuffer += newText;
+      
+      // Clear any existing timer
+      if (bufferTimer) {
+        clearTimeout(bufferTimer);
+      }
+      
+      // Process immediately if we have a sentence-ending punctuation or buffer gets too large
+      const shouldProcessNow = !isCurrentlySpeaking && (
+        textBuffer.length > 40 || 
+        /[.!?]\s*$/.test(textBuffer) ||
+        textBuffer.includes('\n')
+      );
+      
+      if (shouldProcessNow) {
+        await processBuffer();
+      } else if (!isCurrentlySpeaking) {
+        // Set a timer to process the buffer after a short pause in streaming
+        bufferTimer = setTimeout(processBuffer, 800);
+      }
+      // If currently speaking, just accumulate text in buffer until speech finishes
+    }
+    
     const onAudio = (data: ArrayBuffer) =>
       audioStreamerRef.current?.addPCM16(new Uint8Array(data));
 
     client
       .on("close", onClose)
       .on("interrupted", stopAudioStreamer)
-      .on("audio", onAudio);
+      .on("audio", onAudio)
+      .on("content", onText);
 
     return () => {
+      // Process any remaining text in the buffer
+      if (textBuffer.trim() && bufferTimer) {
+        clearTimeout(bufferTimer);
+        processBuffer();
+      }
+      
       client
         .off("close", onClose)
         .off("interrupted", stopAudioStreamer)
-        .off("audio", onAudio);
+        .off("audio", onAudio)
+        .off("content", onText);
     };
   }, [client]);
 
