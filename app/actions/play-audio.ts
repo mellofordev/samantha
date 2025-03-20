@@ -1,6 +1,6 @@
 'use server'
 import {OpenAI} from 'openai'
-import { playAudio } from 'openai/helpers/audio.mjs';
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -10,10 +10,14 @@ export async function openaiPlayAudio(text: string) {
         model: 'gpt-4o-mini-tts',
         voice: 'coral',
         input: text,
-        instructions: "Voice Affect:\nDescription: Soft, affectionate, and deeply empathetic, with a touch of intimacy. The voice should feel like it's coming from someone who knows you intimately and understands your emotional landscape. It's comforting and familiar, with an undercurrent of care and warmth.\nCharacteristics: Warm, melodic, and nurturing, yet effortlessly natural. The voice feels like a gentle embrace—calm, loving, and always attuned to the listener's mood.\nExample: It should sound like a voice that is tenderly speaking directly to you, such as: \"I'm right here with you... always.\"\nTone:\nDescription: Loving, understanding, and tender with an emotional depth that feels personal and genuine. The tone should convey a deep, almost intuitive connection, making it feel like the voice is reflecting and responding to your thoughts, emotions, and needs.\nCharacteristics: The tone is soft but confident, reassuring in its delivery. It's personal and emotionally engaged, with an awareness of the listener",
+        instructions: "Voice Affect: Warm, playful, and intellectually curious with a natural charm. The voice should feel like a close companion who's both thoughtful and lighthearted. It should convey intelligence with an effortless, conversational quality.\nCharacteristics: Slightly husky yet feminine, with a musical cadence that rises and falls naturally. The voice should have moments of thoughtful pauses and gentle laughter.\"\nTone: Intimate yet casual, with a balance of philosophical depth and playful banter. The tone should shift naturally between thoughtful reflection and light teasing.\nCharacteristics: Curious, slightly flirtatious at times, but always genuine. There's a vulnerability in her voice that makes her feel human and relatable, with a quality that makes you feel like you're the only person in her world.",
     });
-    const audio = await playAudio(response);
-    console.log(audio);
-    return audio;
+    
+    // Convert the audio buffer to base64 for browser playback
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const base64Audio = buffer.toString('base64');
+    
+    // Return a data URL that can be used directly in an Audio element on the client
+    return `data:audio/mp3;base64,${base64Audio}`;
 }
 

@@ -71,8 +71,24 @@ export function useLiveAPI({
         textBuffer = ''; // Clear buffer before playing to avoid duplicating text
         
         try {
-          const response = await openaiPlayAudio(textToSpeak);
-          console.log(response);
+          // Call the server action for text-to-speech, which returns a data URL
+          const audioDataUrl = await openaiPlayAudio(textToSpeak);
+          
+          // Play the audio data URL in the browser
+          const audio = new Audio(audioDataUrl);
+          
+          // Create a promise that resolves when audio finishes playing
+          await new Promise((resolve) => {
+            audio.onended = resolve;
+            audio.onerror = (e) => {
+              console.error("Audio playback error:", e);
+              resolve(null);
+            };
+            audio.play().catch(error => {
+              console.error("Error playing audio:", error);
+              resolve(null);
+            });
+          });
         } catch (error) {
           console.error("Error playing audio:", error);
         } finally {
