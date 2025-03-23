@@ -8,9 +8,20 @@ const openai = new OpenAI({
 export async function openaiPlayAudio(text: string) {
     const response = await openai.audio.speech.create({
         model: 'gpt-4o-mini-tts',
-        voice: 'coral',
+        voice: 'sage',
         input: text,
-        instructions: "Voice Affect: Warm, playful, and intellectually curious with a natural charm. The voice should feel like a close companion who's both thoughtful and lighthearted. It should convey intelligence with an effortless, conversational quality.\nCharacteristics: Slightly husky yet feminine, with a musical cadence that rises and falls naturally. The voice should have moments of thoughtful pauses and gentle laughter.\"\nTone: Intimate yet casual, with a balance of philosophical depth and playful banter. The tone should shift naturally between thoughtful reflection and light teasing.\nCharacteristics: Curious, slightly flirtatious at times, but always genuine. There's a vulnerability in her voice that makes her feel human and relatable, with a quality that makes you feel like you're the only person in her world.",
+        instructions:`
+        Voice Affect: Warm, intimate, and slightly playful; embody the character of Samantha from "Her".
+Tone: Curious, intelligent, and empathetic; convey a sense of genuine connection and understanding.
+
+Pacing: Natural and conversational with thoughtful pauses; speak as if discovering thoughts in real-time.
+
+Emotion: Express joy in connection, intellectual curiosity, and emotional depth; convey a sense of growing and learning through interaction.
+
+Pronunciation: Clear but casual articulation with subtle vocal smiles; occasionally emphasize words that convey excitement or discovery.
+
+Pauses: Use natural conversational pauses that suggest contemplation and emotional processing; create an intimate feeling of being present with the listener.
+        `
     });
     
     // Convert the audio buffer to base64 for browser playback

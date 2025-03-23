@@ -57,100 +57,237 @@ export function useLiveAPI({
       setConnected(false);
     };
 
+    // Reference to the currently playing audio element
+    let currentAudio: HTMLAudioElement | null = null;
+
     const stopAudioStreamer = () => audioStreamerRef.current?.stop();
     
-    // Add text buffer to accumulate chunks of text
-    let textBuffer = '';
-    let bufferTimer: NodeJS.Timeout | null = null;
-    let isCurrentlySpeaking = false; // Track if audio is currently being played
+    // Queue implementation for handling text chunks
+    type QueueItem = {
+      text: string;
+      priority: number; // Higher number = higher priority
+    };
     
-    const processBuffer = async () => {
-      if (textBuffer.trim() && !isCurrentlySpeaking) {
+    // Queue state
+    const audioQueue: QueueItem[] = [];
+    let queueProcessing = false;
+    let latestPriority = 0;
+    let bufferTimer: NodeJS.Timeout | null = null;
+    let isCurrentlySpeaking = false;
+    
+    // Function to stop all audio playback and clear the queue
+    const stopAllAudio = () => {
+      // Clear the queue
+      audioQueue.length = 0;
+      
+      // Clear any pending buffer timer
+      if (bufferTimer) {
+        clearTimeout(bufferTimer);
+        bufferTimer = null;
+      }
+      
+      // Stop current audio playback if any
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+        currentAudio = null;
+      }
+      
+      // Reset speaking state
+      isCurrentlySpeaking = false;
+      queueProcessing = false;
+      
+      // Stop audio streamer
+      stopAudioStreamer();
+    };
+    
+    // Function to process the queue
+    const processQueue = async () => {
+      if (audioQueue.length === 0 || isCurrentlySpeaking || !queueProcessing) {
+        return;
+      }
+      
+      // Sort by priority, so newest complete sentences are first
+      audioQueue.sort((a, b) => b.priority - a.priority);
+      
+      // Get the next item from the queue
+      const item = audioQueue.shift();
+      if (!item || !item.text.trim()) {
+        // If queue is now empty or item is empty, stop processing
+        if (audioQueue.length === 0) {
+          queueProcessing = false;
+        } else {
+          // Process next item
+          setTimeout(processQueue, 10);
+        }
+        return;
+      }
+      
+      try {
         isCurrentlySpeaking = true;
-        const textToSpeak = textBuffer;
-        textBuffer = ''; // Clear buffer before playing to avoid duplicating text
         
-        try {
-          // Call the server action for text-to-speech, which returns a data URL
-          const audioDataUrl = await openaiPlayAudio(textToSpeak);
-          
-          // Play the audio data URL in the browser
-          const audio = new Audio(audioDataUrl);
-          
-          // Create a promise that resolves when audio finishes playing
-          await new Promise((resolve) => {
-            audio.onended = resolve;
-            audio.onerror = (e) => {
-              console.error("Audio playback error:", e);
-              resolve(null);
-            };
-            audio.play().catch(error => {
-              console.error("Error playing audio:", error);
-              resolve(null);
-            });
+        // Call the server action for text-to-speech
+        const audioDataUrl = await openaiPlayAudio(item.text);
+        
+        // If queue was cleared during API call, don't play audio
+        if (!queueProcessing) {
+          return;
+        }
+        
+        // Play the audio data URL in the browser
+        const audio = new Audio(audioDataUrl);
+        currentAudio = audio;
+        
+        // Create a promise that resolves when audio finishes playing
+        await new Promise((resolve) => {
+          audio.onended = () => {
+            currentAudio = null;
+            resolve(null);
+          };
+          audio.onerror = (e) => {
+            console.error("Audio playback error:", e);
+            currentAudio = null;
+            resolve(null);
+          };
+          audio.play().catch(error => {
+            console.error("Error playing audio:", error);
+            currentAudio = null;
+            resolve(null);
           });
-        } catch (error) {
-          console.error("Error playing audio:", error);
-        } finally {
-          isCurrentlySpeaking = false;
-          
-          // If more text accumulated during speech, process it after a short delay
-          if (textBuffer.trim()) {
-            setTimeout(processBuffer, 100);
-          }
+        });
+      } catch (error) {
+        console.error("Error playing audio:", error);
+        currentAudio = null;
+      } finally {
+        isCurrentlySpeaking = false;
+        
+        // Process the next item in the queue
+        if (queueProcessing && audioQueue.length > 0) {
+          // Use a small delay to avoid blocking the main thread
+          setTimeout(processQueue, 10);
+        } else {
+          queueProcessing = false;
         }
       }
     };
-
-    const onText = async (data: any) => {
-
+    
+    // Add text to the queue
+    const addToQueue = (text: string, startProcessing = true) => {
+      if (!text.trim()) return;
       
+      latestPriority++;
+      
+      // Add to the queue
+      audioQueue.push({
+        text,
+        priority: latestPriority
+      });
+      
+      // Start processing if not already processing
+      if (startProcessing && !queueProcessing) {
+        queueProcessing = true;
+        processQueue();
+      }
+    };
+    
+    // Smart chunking function to break text into natural speech units
+    const textAccumulator = (() => {
+      let buffer = '';
+      let timeoutId: NodeJS.Timeout | null = null;
+      
+      // Process accumulated text if it forms a complete thought
+      const processIfComplete = (force = false) => {
+        if (!buffer.trim()) return;
+        
+        // Process if there's a sentence ending, a newline, or buffer is getting large
+        const shouldProcess = force || 
+                             /[.!?]\s*$/.test(buffer) || 
+                             buffer.includes('\n') || 
+                             buffer.length > 80;
+        
+        if (shouldProcess) {
+          addToQueue(buffer);
+          buffer = '';
+          
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+        } else if (!timeoutId) {
+          // Set a timer to process incomplete sentences after a delay
+          timeoutId = setTimeout(() => {
+            if (buffer.trim()) {
+              addToQueue(buffer);
+              buffer = '';
+            }
+            timeoutId = null;
+          }, 300); // 300ms timeout for incomplete sentences
+        }
+      };
+      
+      return {
+        add: (text: string) => {
+          buffer += text;
+          processIfComplete();
+        },
+        flush: () => {
+          processIfComplete(true);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+        },
+        clear: () => {
+          buffer = '';
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+        }
+      };
+    })();
+
+    const onText = (data: any) => {
       // Get the new text chunk
       const newText = data.modelTurn.parts[0]?.text || '';
+      if (!newText) return;
       
-      // Add to buffer
-      textBuffer += newText;
-      
-      // Clear any existing timer
-      if (bufferTimer) {
-        clearTimeout(bufferTimer);
-      }
-      
-      // Process immediately if we have a sentence-ending punctuation or buffer gets too large
-      const shouldProcessNow = !isCurrentlySpeaking && (
-        textBuffer.length > 40 || 
-        /[.!?]\s*$/.test(textBuffer) ||
-        textBuffer.includes('\n')
-      );
-      
-      if (shouldProcessNow) {
-        await processBuffer();
-      } else if (!isCurrentlySpeaking) {
-        // Set a timer to process the buffer after a short pause in streaming
-        bufferTimer = setTimeout(processBuffer, 800);
-      }
-      // If currently speaking, just accumulate text in buffer until speech finishes
-    }
+      // Add to accumulator, which will intelligently queue complete sentences
+      textAccumulator.add(newText);
+    };
     
     const onAudio = (data: ArrayBuffer) =>
       audioStreamerRef.current?.addPCM16(new Uint8Array(data));
+      
+    const onInterrupted = () => {
+      // Stop all audio and clear the queue
+      stopAllAudio();
+      
+      // Clear the text accumulator
+      textAccumulator.clear();
+      
+      console.log("Interrupted - audio stopped and queue cleared");
+    };
 
     client
       .on("close", onClose)
-      .on("interrupted", stopAudioStreamer)
+      .on("interrupted", onInterrupted)
       .on("audio", onAudio)
       .on("content", onText);
 
     return () => {
-      // Process any remaining text in the buffer
-      if (textBuffer.trim() && bufferTimer) {
-        clearTimeout(bufferTimer);
-        processBuffer();
+      // Stop any active audio before unmounting
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
       }
+      
+      // Flush any remaining text and make sure queue is processed
+      textAccumulator.flush();
       
       client
         .off("close", onClose)
-        .off("interrupted", stopAudioStreamer)
+        .off("interrupted", onInterrupted)
         .off("audio", onAudio)
         .off("content", onText);
     };
