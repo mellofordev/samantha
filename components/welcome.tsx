@@ -82,7 +82,7 @@ export default function Welcome() {
       
       <div className="text-center relative z-10">
         <h1 className={`text-4xl font-instrument-serif mb-2 ${isNightOrEvening ? 'text-white' : 'text-gray-800'}`}>
-          Welcome {user?.firstName || 'Guest'}!
+          Welcome {user?.firstName || 'Guest'}!.
         </h1>
       {/* <BentoGrid /> */}
       </div>
