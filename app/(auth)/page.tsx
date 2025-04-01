@@ -34,7 +34,7 @@ export default function Page() {
             <Image src="/logo.svg" alt="AutoCompute" width={32} height={32} draggable={false} />
             <span className="text-white">samantha</span>
           </div>
-          <div className="hidden md:flex space-x-8">
+          {/* <div className="hidden md:flex space-x-8">
             <a
               href="#features"
               className="text-sm text-white/90 hover:text-white"
@@ -47,7 +47,7 @@ export default function Page() {
             <a href="#blog" className="text-sm text-white/90 hover:text-white">
               Education
             </a>
-          </div>
+          </div> */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             <SignedOut>
               <a
@@ -83,7 +83,7 @@ export default function Page() {
                 </span>
               </h1>
               <p className="mt-2 sm:mt-4 text-base sm:text-lg text-white/90">
-                automatically controlling computer 
+              an ai agent that helps to get your task done and make your life easier with productivity
               </p>
               <div className="mt-4 sm:mt-6 flex flex-col items-center justify-center gap-4">
                 <SignedOut>
