@@ -2,7 +2,7 @@ declare const chrome: any;
 
 "use client";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ToolCall } from "@/multimodal-live-types";
 import {
   web_search,
@@ -20,12 +20,15 @@ import { SpotlightSearch } from "@/components/spotlight-search";
 import { Progress } from "@/components/ui/progress";
 import { saveSearchHistory, createFolder } from "@/app/actions/backend";
 import { functionRouter } from "@/app/actions/function-router";
+import ControlTray from "@/components/ControlTray";
 
 
 const EXTENSION_ID = "kedicgkkepbajabaahchaahppidgjica";
 export const maxDuration = 30;
 export default function Home() {
   const { client } = useLiveAPIContext();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [generatedObject, setGeneratedObject] = useState<KnowledgeGraphData | null>(null);
   const [lastSearchResults, setLastSearchResults] = useState<KnowledgeGraphData | null>(null);
   const [isFirstTask, setIsFirstTask] = useState(true);
@@ -255,8 +258,8 @@ export default function Home() {
   return (
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
       <SpotlightSearch />
-      <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
-        <div className="min-h-full ml-64 rounded-3xl overflow-auto relative z-10 bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid">
+      <main className="flex flex-col h-full w-full md:border-4 md:border-[#18181B] md:p-2 p-0">
+        <div className="min-h-full md:ml-64 md:rounded-3xl overflow-auto relative z-10 bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] md:border border-[rgba(255,255,255,0.32)] border-solid md:pb-0">
           {isLoading && (
             <Progress 
               value={100} 
@@ -268,6 +271,27 @@ export default function Home() {
           {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
         </div>
       </main>
+      
+      {/* Floating Mobile Control Tray */}
+      <div className="md:hidden fixed bottom-6 left-4 right-4 z-20">
+        {videoStream && (
+          <div className="mb-3">
+            <div className="aspect-video relative overflow-hidden rounded-xl bg-black/20 backdrop-blur-[24px] border border-[rgba(179,177,177,0.32)] border-solid">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        )}
+        <ControlTray
+          videoRef={videoRef}
+          supportsVideo={true}
+          onVideoStreamChange={setVideoStream}
+        />
+      </div>
     </div>
   );
 }

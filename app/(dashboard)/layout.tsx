@@ -71,7 +71,6 @@ export default function RootLayout({
         <SidebarProvider>
           <ClerkProvider>
           <LiveAPIProvider url={uri} apiKey={API_KEY}>
-            <MobileNotice />
             <AppSidebar />
             {children}
           </LiveAPIProvider>

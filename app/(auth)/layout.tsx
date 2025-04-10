@@ -49,7 +49,7 @@ export default function RootLayout({
     <html lang="en" className={`${instrumentSerif.variable}`}>
       <body>
         <ClerkProvider>
-          <MobileNotice />
+          {/* <MobileNotice /> */}
           {children}
         </ClerkProvider>
       </body>
