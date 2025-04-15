@@ -76,7 +76,7 @@ export default function Home() {
                       output: {
                         success: true,
                         ui_generated: true,
-                        tell_user: response.description,
+                        tell_user: `Here are the search results for ${fc.args.web_search}: ${response.description} \n Insights: ${(response as any).quick_insights?.map((insight:any) => insight.content).join("\n") || 'No insights available'}`,
                       },
                     },
                     id: fc.id,
