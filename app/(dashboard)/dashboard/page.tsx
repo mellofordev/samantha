@@ -13,13 +13,11 @@ import {
   generateWebSearch
 } from "@/app/actions/ai-agent";
 import Welcome from "@/components/welcome";
-import { automationStore } from "@/lib/store/automation-store";
 import { KnowledgeGraphBento } from "@/components/knowledge-graph";
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph";
 import { SpotlightSearch } from "@/components/spotlight-search";
 import { Progress } from "@/components/ui/progress";
 import { saveSearchHistory, createFolder } from "@/app/actions/backend";
-import { functionRouter } from "@/app/actions/function-router";
 import ControlTray from "@/components/ControlTray";
 
 
