@@ -1,257 +1,69 @@
-declare const chrome: any;
-
 "use client";
-import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
-import { useEffect, useState } from "react";
-import { ToolCall } from "@/multimodal-live-types";
-import {
-  web_search,
-  add_folder,
-  conversation
-} from "@/lib/schema/function-call";
+
+import { useRef, useState } from "react";
 import {
   generateWebSearch
 } from "@/app/actions/ai-agent";
 import Welcome from "@/components/welcome";
-import { automationStore } from "@/lib/store/automation-store";
 import { KnowledgeGraphBento } from "@/components/knowledge-graph";
 import { KnowledgeGraphData } from "@/lib/schema/knowledge-graph";
 import { SpotlightSearch } from "@/components/spotlight-search";
 import { Progress } from "@/components/ui/progress";
-import { saveSearchHistory, createFolder } from "@/app/actions/backend";
-import { functionRouter } from "@/app/actions/function-router";
-
-
-const EXTENSION_ID = "kedicgkkepbajabaahchaahppidgjica";
+import { AIInputWithSearch } from "@/components/ui/ai-input-with-search";
+import {useChat} from "@ai-sdk/react";
+import { useUser } from "@clerk/nextjs";
+import { openaiPlayAudio } from "@/app/actions/play-audio";
+import { useWeatherStore } from "@/contexts/weather-store";
 export const maxDuration = 30;
 export default function Home() {
-  const { client } = useLiveAPIContext();
   const [generatedObject, setGeneratedObject] = useState<KnowledgeGraphData | null>(null);
-  const [lastSearchResults, setLastSearchResults] = useState<KnowledgeGraphData | null>(null);
-  const [isFirstTask, setIsFirstTask] = useState(true);
-  const [screenshot, setScreenshot] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Add event listener for renderKnowledgeGraph event
-  useEffect(() => {
-    const handleRenderKnowledgeGraph = (event: any) => {
-      const { data } = event.detail;
-      if (data) {
-        console.log("Rendering knowledge graph from event:", data);
-        setGeneratedObject(data as KnowledgeGraphData);
-        setLastSearchResults(data as KnowledgeGraphData);
+  const {user} = useUser();
+  const { weather, location } = useWeatherStore();
+  const { messages, input, handleInputChange, handleSubmit, addToolResult } = useChat({
+    api: "/api/chat",
+    body: {
+      username: user?.firstName || "User",
+      context: {
+        weather: weather ? {
+          temperature: Math.round(weather.current.temperature_2m),
+          humidity: Math.round(weather.current.relative_humidity_2m),
+          windSpeed: Math.round(weather.current.wind_speed_10m),
+          location: location,
+        } : undefined,
+        toolInstructions: "Use web search for latest information",
+        userPreference: "Prefers concise responses with actionable insights"
       }
-    };
-
-    // Add event listener
-    window.addEventListener('renderKnowledgeGraph', handleRenderKnowledgeGraph);
-
-    // Clean up
-    return () => {
-      window.removeEventListener('renderKnowledgeGraph', handleRenderKnowledgeGraph);
-    };
-  }, []);
-
-  useEffect(() => {
-    const onToolCall = (toolCall: ToolCall) => {
-      console.log(`got toolcall`, toolCall);
-
-      if (toolCall.functionCalls.length) {
-        toolCall.functionCalls.forEach(async (fc: any) => {
-          if (fc.name === web_search.name) {
-            console.log("Web Search Call:", fc.args.web_search);
-            setIsLoading(true);
-            try {
-              const response = await generateWebSearch(fc.args.web_search);
-              console.log("Web Search Response:", response);
-              setGeneratedObject(response as KnowledgeGraphData);
-              setLastSearchResults(response as KnowledgeGraphData);
-              client.sendToolResponse({
-                functionResponses: [
-                  {
-                    response: {
-                      output: {
-                        success: true,
-                        ui_generated: true,
-                        tell_user: response.description,
-                      },
-                    },
-                    id: fc.id,
-                  },
-                ],
-              });
-              saveSearchHistory(fc.args.web_search, JSON.stringify(response));
-            } finally {
-              // Immediately set isLoading to false when data is received
-              setIsLoading(false);
-            }
-          }
-          if (fc.name === add_folder.name) {
-            console.log("Add Folder Call:", fc.args);
-            setIsLoading(true);
-            try {
-              // Use either the current generatedObject or the lastSearchResults
-              const searchData = generatedObject || lastSearchResults;
-              
-              // Log the current state to debug
-              console.log("Current generatedObject:", generatedObject ? "Available" : "Null");
-              console.log("Last search results:", lastSearchResults ? "Available" : "Null");
-              console.log("Using search data:", searchData ? "Available" : "Null");
-              
-              if (searchData) {
-                console.log("Search data details:", {
-                  title: searchData.title,
-                  hasSearchResults: searchData.search_results && searchData.search_results.length > 0,
-                  searchResultsCount: searchData.search_results ? searchData.search_results.length : 0
-                });
-              }
-              
-              // Determine content type and prepare content
-              let content = null;
-              let contentType: 'urls' | 'knowledge_graph' = 'urls';
-              
-              // If we have search results from either current or last search, use them
-              if (searchData?.search_results && Array.isArray(searchData.search_results) && searchData.search_results.length > 0) {
-                content = searchData.search_results;
-                contentType = 'urls';
-                
-                console.log(`Creating folder with ${searchData.search_results.length} search results`);
-              } 
-              // If we have a knowledge graph but no search results, save the entire knowledge graph
-              else if (searchData) {
-                // Create a copy of the searchData to avoid reference issues
-                content = JSON.parse(JSON.stringify(searchData));
-                contentType = 'knowledge_graph';
-                
-                // If there are no search results but we have a knowledge graph, create some placeholder search results
-                if (!content.search_results || !Array.isArray(content.search_results) || content.search_results.length === 0) {
-                  content.search_results = [
-                    {
-                      title: content.title || fc.args.folder_name,
-                      url: "",
-                      content: content.description || `Information about ${fc.args.folder_name}`
-                    }
-                  ];
-                }
-                
-                console.log(`Creating folder with knowledge graph data: ${content.title}`);
-              }
-              // If we don't have any content yet, create a placeholder file with the folder name
-              else {
-                // Create a default knowledge graph structure
-                content = {
-                  title: fc.args.folder_name,
-                  description: "Folder created by user request",
-                  imageUrl: "/placeholder.svg",
-                  relatedTopics: [],
-                  videoResult: [],
-                  imageGallery: [],
-                  quick_insights: [
-                    {
-                      title: "Created Folder",
-                      emoji: "📁",
-                      content: `This folder was created to store information about ${fc.args.folder_name}`
-                    }
-                  ],
-                  search_results: [
-                    {
-                      title: fc.args.folder_name,
-                      url: "",
-                      content: `Information about ${fc.args.folder_name}`
-                    }
-                  ]
-                };
-                contentType = 'knowledge_graph';
-                
-                console.log(`Creating folder with placeholder content`);
-              }
-              
-              // Create the folder with the appropriate content
-              const folder = await createFolder(
-                fc.args.folder_name,
-                content,
-                contentType
-              );
-              
-              // Dispatch event to notify sidebar to refresh folders
-              if (folder) {
-                window.dispatchEvent(new Event('folderCreated'));
-              }
-              
-              // Send response back to the model
-              client.sendToolResponse({
-                functionResponses: [
-                  {
-                    response: {
-                      output: {
-                        success: !!folder,
-                        folder_created: !!folder,
-                        folder_name: fc.args.folder_name,
-                        content_type: contentType,
-                        message: folder 
-                          ? `Folder "${fc.args.folder_name}" created successfully with ${contentType === 'urls' && Array.isArray(content) ? `${content.length} URLs` : 'knowledge graph data'}`
-                          : "Failed to create folder"
-                      },
-                    },
-                    id: fc.id,
-                  },
-                ],
-              });
-            } catch (error) {
-              console.error("Error creating folder:", error);
-              client.sendToolResponse({
-                functionResponses: [
-                  {
-                    response: {
-                      output: {
-                        success: false,
-                        folder_created: false,
-                        error: error instanceof Error ? error.message : "Unknown error"
-                      },
-                    },
-                    id: fc.id,
-                  },
-                ],
-              });
-            } finally {
-              setIsLoading(false);
-            }
-          }
-          // the agent operator is removed from the main branch 
-          // available in the dev branch
-        });
+    },
+    onToolCall({ toolCall }:{toolCall:any}) {
+      console.log(toolCall);
+      if(toolCall.toolName == "webSearch") {
+        handleToolCall(toolCall.toolCallId,toolCall?.args.query);
       }
-    };
-
-    // Helper function for error handling
-    const handleError = (
-      client: any,
-      fcId: string,
-      progress: string,
-      error: string
-    ) => {
-      console.error("Action failed:", error);
-      client.sendToolResponse({
-        functionResponses: [
-          {
-            response: {
-              output: {
-                success: false,
-                agent_progress: progress,
-                error: error,
-              },
-            },
-            id: fcId,
-          },
-        ],
+    },
+    onFinish: async (response) => {
+      console.log(response);
+      // const audio = await openaiPlayAudio(response.content);
+      // const audioDataUrl = new Audio(audio);
+      // audioDataUrl.play();
+    }
+  });
+  const handleToolCall = async (toolCallId: string, query: string) => {
+    try{
+      setIsLoading(true);
+      const response = await generateWebSearch(query);
+      console.log(response);
+      setGeneratedObject(response);
+      addToolResult({
+        toolCallId: toolCallId,
+        result: JSON.stringify(response)
       });
-    };
-    client.on("toolcall", onToolCall);
-    return () => {
-      client.off("toolcall", onToolCall);
-    };
-  }, [client, isFirstTask]);
-
+    } catch (error) {
+      console.error("Error generating web search:", error);
+    }finally{
+      setIsLoading(false);
+    }
+  }
   return (
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
       <SpotlightSearch />
@@ -264,8 +76,16 @@ export default function Home() {
               className="relative overflow-hidden"
             />
           )}
-          {/* {screenshot && <img src={screenshot} alt="screenshot" className="w-full h-full object-cover" />} */}
-          {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome />}
+          {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome messages={messages}/>}
+        </div>
+        
+        {/* Fixed AIInputWithSearch at the bottom */}
+        <div className="fixed bottom-8 z-20" style={{ left: "calc(50% + 8rem)", transform: "translateX(-50%)", width: "720px" }}>
+            <AIInputWithSearch 
+                onSubmit={handleSubmit}
+                input={input}
+                handleInputChange={handleInputChange}
+            />
         </div>
       </main>
     </div>

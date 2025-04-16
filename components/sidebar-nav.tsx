@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { useWeatherStore } from "@/contexts/weather-store";
 const inter = Inter({ 
   weight: '700',
   subsets: ['latin'],
@@ -34,11 +35,7 @@ export function AppSidebar() {
   const { setConfig } = useLiveAPIContext();
   const { user } = useUser();
   
-  // Add weather state
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [location, setLocation] = useState<string>('Loading location...');
-  const [isLoadingWeather, setIsLoadingWeather] = useState(true);
-  const [coordinates, setCoordinates] = useState<{latitude: number, longitude: number} | null>(null);
+  const { weather, location, coordinates, isLoadingWeather, setWeather, setLocation, setCoordinates, setIsLoadingWeather } = useWeatherStore();
   const [userPreference, setUserPreference] = useState<string>('');
   const [searchHistory, setSearchHistory] = useState<any[]>([]);
   const [folders, setFolders] = useState<any[]>([]);
@@ -76,14 +73,12 @@ export function AppSidebar() {
         try {
           const { latitude, longitude } = position.coords;
           setCoordinates({ latitude, longitude });
-          
           // Fetch weather data
           const response = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,wind_speed_10m,relative_humidity_2m`
           );
           const data = await response.json();
           setWeather(data);
-
           // Fetch location name
           const geoResponse = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}`
@@ -109,12 +104,12 @@ export function AppSidebar() {
   // Update system instruction with weather data
   useEffect(() => {
     setConfig({
-      model: "models/gemini-2.0-flash-exp",
+      model: "models/gemini-2.0-flash-live-001",
       generationConfig: {
-        responseModalities: "text",
-        // speechConfig: {
-        //   voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
-        // },
+        responseModalities: "audio",
+        speechConfig: {
+          voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
+        },
       },
       systemInstruction: {
         parts: [
@@ -479,11 +474,11 @@ export function AppSidebar() {
         />
       </SidebarGroup>
       <SidebarFooter className="pb-2">
-        <ControlTray
+        {/* <ControlTray
           videoRef={videoRef}
           supportsVideo={true}
           onVideoStreamChange={setVideoStream}
-        />
+        /> */}
       </SidebarFooter>
     </Sidebar>
   );

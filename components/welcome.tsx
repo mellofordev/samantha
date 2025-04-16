@@ -2,7 +2,7 @@ import { useUser } from "@clerk/nextjs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import BentoGrid from "@/components/animata/bento-grid/gradient";
 import { ArrowLeft, ArrowRight, BugIcon, Info } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ const features = [
   }
 ];
 
-export default function Welcome() {
+export default function Welcome({messages}:{messages:any}) {
   const { user } = useUser();
   const currentHour = new Date().getHours();
   const isNightOrEvening = currentHour >= 17 || currentHour < 6;
@@ -42,7 +42,6 @@ export default function Welcome() {
   const prevFeature = () => {
     setCurrentFeatureIndex((prev) => (prev - 1 + features.length) % features.length);
   };
-
   return (
     <div className="h-full w-full flex flex-col items-center justify-center relative overflow-hidden">
       <div
@@ -51,7 +50,7 @@ export default function Welcome() {
           backgroundImage: `url('/cloud2.avif')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: isNightOrEvening ? "brightness(0.6)" : "none",
+          // filter: isNightOrEvening ? "brightness(0.6)" : "none",
         }}
       />
       {/* Grain noise filter overlay */}
@@ -80,9 +79,16 @@ export default function Welcome() {
         </Button>
       </div>
       
-      <div className="text-center relative z-10">
+      <div className="text-pretty relative z-10">
         <h1 className={`text-4xl font-instrument-serif mb-2 ${isNightOrEvening ? 'text-white' : 'text-gray-800'}`}>
-          Welcome {user?.firstName || 'Guest'}!
+          {
+            messages?.length > 0 
+              ? (messages[messages.length - 1].role === "assistant" 
+                  ? messages[messages.length - 1].content 
+                  : ""
+              )
+              : "Welcome " + (user?.firstName || 'Guest') + "!"
+          }
         </h1>
       {/* <BentoGrid /> */}
       </div>

@@ -1,11 +1,12 @@
 "use server";
 import { streamUI } from "ai/rsc";
-import { CoreMessage, generateObject, generateText, LanguageModelV1 } from "ai";
-import { createGoogleGenerativeAI} from "@ai-sdk/google";
+import { CoreMessage, experimental_generateSpeech, generateObject, generateText, SpeechModel } from "ai";
+import { createGoogleGenerativeAI, google} from "@ai-sdk/google";
 import { groq } from "@ai-sdk/groq";
 import {z } from "zod";
 import { JSDOM } from 'jsdom';
 import { modifySearchPrompt } from "./user-context-gen";
+import { openai } from "@ai-sdk/openai";
 
 interface SearchResult {
   title: string;
@@ -330,6 +331,16 @@ export async function agent(user_task: string, screenshot?: string, dom?: string
 
   return response.object;
 }
+export async function generateAudio(prompt: string) {
+  const {audio} = await experimental_generateSpeech({
+    model: openai.speech("gpt-4o-mini-tts"),
+    text: prompt,
+    voice: "alloy",
+    outputFormat: "mp3",
+    // abortSignal: AbortSignal.timeout(1000),
+  });
+  return audio;
+}
 export async function generateWebSearch(prompt: string) {
     const  modifyPrompt = await modifySearchPrompt(prompt);
     const searchResults = await getSearchResults(modifyPrompt);
@@ -434,6 +445,9 @@ export async function generateWebSearch(prompt: string) {
         imageUrl: "",
         relatedTopics: [],
         videoResult: [],
+        imageGallery: [],
+        quick_insights: [],
+        search_results: []
       }
     }
     
