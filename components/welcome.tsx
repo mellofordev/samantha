@@ -79,7 +79,7 @@ export default function Welcome({messages}:{messages:any}) {
         </Button>
       </div>
       
-      <div className="text-pretty relative z-10">
+      <div className="text-pretty relative z-10 p-6">
         <h1 className={`text-4xl font-instrument-serif mb-2 ${isNightOrEvening ? 'text-white' : 'text-gray-800'}`}>
           {
             messages?.length > 0 
