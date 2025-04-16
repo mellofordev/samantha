@@ -7,7 +7,6 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { useRef, useState, useEffect } from "react";
-import ControlTray from "@/components/ControlTray";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { prompt } from "@/lib/prompt_helpers/prompt";
 import { web_search, conversation, add_folder } from "@/lib/schema/function-call";
@@ -30,8 +29,6 @@ const inter = Inter({
 });
 
 export function AppSidebar() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const { setConfig } = useLiveAPIContext();
   const { user } = useUser();
   
@@ -313,18 +310,6 @@ export function AppSidebar() {
       <SidebarContent>
         <ContextMenu>
           <ContextMenuTrigger className="flex flex-col w-full h-full">
-            {videoStream && (
-              <div className="space-y-4 p-4">
-                <div className="aspect-video relative overflow-hidden rounded-xl  bg-black/20 backdrop-blur-[24px] border border-[rgba(179,177,177,0.32)] border-solid">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            )}
             <div className="p-3 space-y-3">
               {/* Search History Folder */}
               <Folder 
@@ -473,13 +458,6 @@ export function AppSidebar() {
           isLoading={isLoadingWeather}
         />
       </SidebarGroup>
-      <SidebarFooter className="pb-2">
-        {/* <ControlTray
-          videoRef={videoRef}
-          supportsVideo={true}
-          onVideoStreamChange={setVideoStream}
-        /> */}
-      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -1,5 +1,7 @@
 'use server'
 import {OpenAI} from 'openai'
+import { experimental_generateSpeech as generateSpeech } from 'ai';
+import { hume } from '@ai-sdk/hume';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -32,3 +34,14 @@ Pauses: Use natural conversational pauses that suggest contemplation and emotion
     return `data:audio/mp3;base64,${base64Audio}`;
 }
 
+// Explicitly mark this function as a server action
+export const humePlayAudio = async (text: string) => {
+  "use server";
+  const result = await generateSpeech({
+    model: hume.speech(),
+    text: text,
+    voice: '6b530c02-5a80-4e60-bb68-f2c171c5029f',
+    providerOptions: { hume: {} },
+  });
+  return result.audio.base64;
+}
