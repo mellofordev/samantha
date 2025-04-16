@@ -10,6 +10,7 @@ import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { AudioRecorder } from "@/lib/audio-recorder";
 import { UseMediaStreamResult } from "@/hooks/use-media-stream-mux";
 import { Button } from "./button";
+import { saveConversationHistory } from "@/app/actions/backend";
 
 interface AIInputWithSearchProps {
   id?: string;
@@ -480,9 +481,10 @@ export function AIInputWithSearch({
               <div className="absolute right-3 bottom-3">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     const formEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
                     onSubmit?.(formEvent);
+                    await saveConversationHistory(input, "user");
                   }}
                   className={cn(
                     "rounded-lg p-2 transition-colors border border-white/10",

@@ -25,7 +25,7 @@ model User {
 
 model Conversation {
   id                String   @id @default(cuid())
-  clerk_reference_id String  @unique
+  clerk_reference_id String  
   user              User     @relation(fields: [clerk_reference_id], references: [clerk_reference_id])
   createdAt         DateTime @default(now())
   role              String 
