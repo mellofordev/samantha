@@ -14,6 +14,7 @@ import {useChat} from "@ai-sdk/react";
 import { useUser } from "@clerk/nextjs";
 import { openaiPlayAudio } from "@/app/actions/play-audio";
 import { useWeatherStore } from "@/contexts/weather-store";
+import { saveConversationHistory } from "@/app/actions/backend";
 export const maxDuration = 30;
 export default function Home() {
   const [generatedObject, setGeneratedObject] = useState<KnowledgeGraphData | null>(null);
@@ -43,6 +44,7 @@ export default function Home() {
     },
     onFinish: async (response) => {
       console.log(response);
+      await saveConversationHistory(response.content,response.role);
       // const audio = await openaiPlayAudio(response.content);
       // const audioDataUrl = new Audio(audio);
       // audioDataUrl.play();

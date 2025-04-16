@@ -465,5 +465,32 @@ export async function renameFolder(folderId: string, newName: string) {
     }
 }
 
+export async function getConversationHistory() {
+    const clerkId = await getCurrentUser();
+    if (!clerkId) return null;
+    
+    const conversationHistory = await prisma.conversation.findMany({
+        where: {
+            clerk_reference_id: clerkId
+        }
+    });
+    if (!conversationHistory) return null;
+    return conversationHistory;
+}
+
+export async function saveConversationHistory(message: string,role: string) {
+    const clerkId = await getCurrentUser();
+    if (!clerkId) return null;
+    
+    const conversationHistory = await prisma.conversation.create({
+        data: {
+            clerk_reference_id: clerkId,
+            message: message,
+            role: role
+        }
+    });
+    if (!conversationHistory) return null;
+    return conversationHistory;
+}
 
 
