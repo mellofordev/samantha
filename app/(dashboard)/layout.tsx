@@ -6,7 +6,7 @@ import { LiveAPIProvider } from "@/contexts/LiveAPIContext";
 import { AppSidebar } from "@/components/sidebar-nav";
 import { ClerkProvider } from "@clerk/nextjs";
 import MobileNotice from "@/components/mobile-notice";
-
+import { Analytics } from "@vercel/analytics/react"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -59,7 +59,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const API_KEY = process.env.NEXT_PUBLIC_GENAI_API_KEY as string;
+  const API_KEY = process.env.GENAI_API_KEY as string;
   const host = "generativelanguage.googleapis.com";
   const uri = `wss://${host}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent`;
 
@@ -77,6 +77,7 @@ export default function RootLayout({
           </LiveAPIProvider>
           </ClerkProvider>
         </SidebarProvider>
+        <Analytics />
       </body>
     </html>
   );

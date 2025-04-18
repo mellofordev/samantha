@@ -11,6 +11,9 @@ import { AudioRecorder } from "@/lib/audio-recorder";
 import { UseMediaStreamResult } from "@/hooks/use-media-stream-mux";
 import { Button } from "./button";
 import { getConversationHistory, saveConversationHistory } from "@/app/actions/backend";
+import { TooltipContent, TooltipTrigger } from "./tooltip";
+import { Tooltip } from "./tooltip";
+import { TooltipProvider } from "./tooltip";
 
 interface AIInputWithSearchProps {
   id?: string;
@@ -338,9 +341,9 @@ export function AIInputWithSearch({
                         },
                       }}
                     >
-                      <Monitor
-                        className={cn(
-                          "w-4 h-4",
+                            <Monitor
+                              className={cn(
+                                "w-4 h-4",
                           showScreenshare
                             ? "text-emerald-500"
                             : "text-inherit"

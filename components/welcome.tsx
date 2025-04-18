@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { WrigleDivider } from "./ui/wrigle-divider";
-
+import Link from "next/link";
 // Define the features to display in the carousel
 const features = [
   {
@@ -16,14 +16,14 @@ const features = [
     image:"/context.png"
   },
   {
-    title: "Quick Search",
-    description: "Press Command+K (Mac) or Ctrl+K (Windows) to instantly search for anything you need",
+    title: "Realtime search",
+    description: "Samantha automatically searches the web for you when you ask a question",
     image:"/search.png"
   },
   {
-    title: "Browser agent",
-    description: "Tell some task to do , it will open up new tab and does it for you, requires chrome and our browser extension to be installed to work",
-    image:"/agent.png"
+    title: "Screen share",
+    description: "You can share your screen with Samantha and she will help you with any thing",
+    image:"/screen.png"
   }
 ];
 
@@ -92,7 +92,14 @@ export default function Welcome({messages}:{messages:any}) {
         </h1>
       {/* <BentoGrid /> */}
       </div>
-      
+      {
+        !user && (
+          <div className="flex flex-row justify-center items-center gap-4">
+            <Button className="rounded-3xl"><Link href="/login">Login</Link></Button>
+            <Button className="rounded-3xl"><Link href="/signup">Signup</Link></Button>
+          </div>
+        )
+      }
       {/* Features Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="p-6 md:p-8 text-white max-h-[85vh] overflow-hidden">

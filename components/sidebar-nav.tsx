@@ -10,7 +10,7 @@ import { useRef, useState, useEffect } from "react";
 import { useLiveAPIContext } from "@/contexts/LiveAPIContext";
 import { prompt } from "@/lib/prompt_helpers/prompt";
 import { web_search, conversation, add_folder } from "@/lib/schema/function-call";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import { Inter } from 'next/font/google';
 import WeatherCard, { WeatherData } from "./animata/widget/weather-card";
 import { Folder, FolderItem } from "./ui/folder";
@@ -304,7 +304,14 @@ export function AppSidebar() {
         <div className="flex items-center gap-2">
           <Image src="/logo.svg" alt="AutoCompute" width={32} height={32} draggable={false} />
         </div>
-        <UserButton  />
+        <SignedIn>
+          <UserButton  />
+        </SignedIn>
+        <SignedOut>
+          <Button variant="outline">
+            Sign in
+          </Button>
+        </SignedOut>
       </SidebarHeader>
       <hr className="border-white/10 border-dashed" />
       <SidebarContent>
