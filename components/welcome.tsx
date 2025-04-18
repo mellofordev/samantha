@@ -1,8 +1,6 @@
 import { useUser } from "@clerk/nextjs";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import BentoGrid from "@/components/animata/bento-grid/gradient";
 import { ArrowLeft, ArrowRight, BugIcon, Info } from "lucide-react";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
