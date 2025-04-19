@@ -59,7 +59,6 @@ export default function Page() {
     try{
       setIsLoading(true);
       const response = await generateWebSearch(query);
-      console.log(response);
       setGeneratedObject(response);
       if(mode!="live-mode"){
         addToolResult({
