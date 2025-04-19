@@ -61,12 +61,12 @@ export function AIInputWithSearch({
       await disconnect();
     } else {
       await connect();
-      const conversationHistory = await getConversationHistory();
-      client.send([
-        {
-          text: `with calm and soothing voice start the conversation with the user , btw here is the previous messages you have send ${conversationHistory?.map(message => `${message.role}: ${message.message}`).join("\n")}`,
-        },
-      ]);
+      // const conversationHistory = await getConversationHistory();
+      // client.send([
+      //   {
+      //     text: `with calm and soothing voice start the conversation with the user , btw here is the previous messages you have send ${conversationHistory?.map(message => `${message.role}: ${message.message}`).join("\n")}`,
+      //   },
+      // ]);
     }
   };
   useEffect(() => {

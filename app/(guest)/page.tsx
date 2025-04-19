@@ -53,7 +53,6 @@ export default function Page() {
       } catch (error) {
         console.error("Error playing audio:", error);
       }
-      // await saveConversationHistory(response.content,response.role);
     }
   });
   const handleToolCall = async (toolCallId: string, query: string, mode: string) => {
