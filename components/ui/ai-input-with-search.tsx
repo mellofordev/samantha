@@ -60,13 +60,25 @@ export function AIInputWithSearch({
     if (connected) {
       await disconnect();
     } else {
-      await connect();
-      // const conversationHistory = await getConversationHistory();
-      // client.send([
-      //   {
-      //     text: `with calm and soothing voice start the conversation with the user , btw here is the previous messages you have send ${conversationHistory?.map(message => `${message.role}: ${message.message}`).join("\n")}`,
-      //   },
-      // ]);
+      try {
+        await connect();
+        // Wait a moment to ensure the WebSocket connection is fully established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Only proceed if the connection was successful
+        if (client.ws && client.ws.readyState === WebSocket.OPEN) {
+          const conversationHistory = await getConversationHistory();
+          client.send([
+            {
+              text: `with calm and soothing voice start the conversation with the user , btw here is the previous messages you have send ${conversationHistory?.map(message => `${message.role}: ${message.message}`).join("\n")}`,
+            },
+          ]);
+        } else {
+          console.error("WebSocket connection not established");
+        }
+      } catch (error) {
+        console.error("Error connecting to WebSocket:", error);
+      }
     }
   };
   useEffect(() => {
@@ -77,15 +89,20 @@ export function AIInputWithSearch({
   }, [inVolume]);
   useEffect(() => {
     const onData = async (base64: string) => {
-      client.sendRealtimeInput([
-        {
-          mimeType: "audio/pcm;rate=16000",
-          data: base64,
-        },
-      ]);
-    
-
+      try {
+        if (client.ws && client.ws.readyState === WebSocket.OPEN) {
+          client.sendRealtimeInput([
+            {
+              mimeType: "audio/pcm;rate=16000",
+              data: base64,
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error sending audio data:", error);
+      }
     };
+    
     if (connected && audioRecorder) {
       audioRecorder.on("data", onData).on("volume", setInVolume).start();
     } else {
@@ -117,7 +134,15 @@ export function AIInputWithSearch({
         ctx.drawImage(videoRef.current as HTMLVideoElement, 0, 0, canvas.width, canvas.height);
         const base64 = canvas.toDataURL("image/jpeg", 1.0);
         const data = base64.slice(base64.indexOf(",") + 1, Infinity);
-        client.sendRealtimeInput([{ mimeType: "image/jpeg", data }]);
+        
+        // Check if WebSocket is connected before sending data
+        try {
+          if (client.ws && client.ws.readyState === WebSocket.OPEN) {
+            client.sendRealtimeInput([{ mimeType: "image/jpeg", data }]);
+          }
+        } catch (error) {
+          console.error("Error sending video frame:", error);
+        }
       }
       if (connected) {
         timeoutId = window.setTimeout(sendVideoFrame, 1000 / 0.5);

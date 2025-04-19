@@ -79,9 +79,33 @@ export function useLiveAPI({
     if (!config) {
       throw new Error("config has not been set");
     }
+    
     client.disconnect();
-    await client.connect(config);
-    setConnected(true);
+    
+    // Try to connect with retries
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        await client.connect(config);
+        console.log(`WebSocket connection established (attempt ${attempts})`);
+        setConnected(true);
+        return;
+      } catch (error) {
+        console.error(`WebSocket connection failed (attempt ${attempts}):`, error);
+        
+        if (attempts >= maxAttempts) {
+          console.error("Max connection attempts reached, giving up");
+          throw error;
+        }
+        
+        // Wait before trying again (exponential backoff)
+        const waitTime = Math.min(1000 * Math.pow(2, attempts - 1), 5000);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
   }, [client, setConnected, config]);
 
   const disconnect = useCallback(async () => {
