@@ -107,7 +107,7 @@ export default function Page() {
   return (
     <div className="bg-[#18181B] w-full h-screen fixed inset-0">
       <main className="flex flex-col h-full w-full border-4 border-[#18181B] p-2">
-        <div className="min-h-full ml-64 rounded-3xl overflow-auto relative z-10 bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid">
+        <div className="min-h-full ml-0 md:ml-64 rounded-3xl overflow-auto relative z-10 bg-[rgba(232,225,225,0.2)] backdrop-blur-[24px] border border-[rgba(255,255,255,0.32)] border-solid">
           {isLoading && (
             <Progress 
               value={100} 
@@ -118,8 +118,8 @@ export default function Page() {
           {generatedObject != null ? <KnowledgeGraphBento {...generatedObject}/> : <Welcome messages={messages}/>}
         </div>
         
-        {/* Fixed AIInputWithSearch at the bottom */}
-        <div className="fixed bottom-8 z-20" style={{ left: "calc(50% + 8rem)", transform: "translateX(-50%)", width: "720px" }}>
+        {/* Responsive AIInputWithSearch */}
+        <div className="fixed bottom-8 z-20 w-[90%] md:w-[720px] left-1/2 md:left-[calc(50%+8rem)] transform -translate-x-1/2">
             <AIInputWithSearch 
                 onSubmit={handleSubmit}
                 input={input}

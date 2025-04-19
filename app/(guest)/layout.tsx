@@ -57,7 +57,6 @@ export default function RootLayout({
         <ClerkProvider>
           <SidebarProvider>
             <LiveAPIProvider url={uri} apiKey={process.env.GENAI_API_KEY as string}>
-              <MobileNotice />
               <GuestSidebarNav />
               {children}
             </LiveAPIProvider>
