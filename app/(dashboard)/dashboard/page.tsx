@@ -77,31 +77,34 @@ export default function Home() {
     }
   }
   useEffect(() => {
-    client.on("toolcall", (toolCall:ToolCall) => {
-      if(toolCall.functionCalls.length > 0) {
-        toolCall.functionCalls.forEach((functionCall : any) => {
-          console.log(functionCall);
-          if(functionCall.name == "web_search") {
-            handleToolCall(functionCall.id,functionCall?.args?.web_search,"live-mode");
-            client.sendToolResponse({
-              functionResponses: [
-                {
-                  response: {
-                    output: {
-                      success: true,
-                      search_results_from_web: `Here are the search results for ${functionCall?.args?.web_search}: ${generatedObject?.description} \n Insights: ${generatedObject?.quick_insights?.map((insight:any) => insight.content).join("\n") || 'No insights available'}`,
+    const toolCallHandler = async () => {
+      client.on("toolcall", (toolCall:ToolCall) => {
+        if(toolCall.functionCalls.length > 0) {
+          toolCall.functionCalls.forEach((functionCall : any) => {
+            console.log(functionCall);
+            if(functionCall.name == "web_search") {
+              handleToolCall(functionCall.id,functionCall?.args?.web_search,"live-mode");
+              client.sendToolResponse({
+                functionResponses: [
+                  {
+                    response: {
+                      output: {
+                        success: true,
+                        search_results_from_web: `Here are the search results for ${functionCall?.args?.web_search}: ${generatedObject?.description} \n Insights: ${generatedObject?.quick_insights?.map((insight:any) => insight.content).join("\n") || 'No insights available'}`,
+                      },
                     },
+                    id: functionCall.id,
                   },
-                  id: functionCall.id,
-                },
-              ],
-            });
-          }
-        });
-      }
-    });
+                ],
+              });
+            }
+          });
+        }
+      });
+    }
+    client.on("toolcall", toolCallHandler)
     return () => {
-      client.off("toolcall");
+      client.off("toolcall",toolCallHandler);
     };
   }, [client]);
   return (
